@@ -288,20 +288,16 @@ class MenuScene extends Phaser.Scene {
         // НОВОЕ: Загружаем баланс асинхронно
         this.loadMonkeyCoins(userData.id);
 
-        // Кнопки - КОМПАКТНЫЕ ДЛЯ ТЕЛЕФОНА
+        // Кнопки - КОМПАКТНЫЕ ДЛЯ ТЕЛЕФОНА (реорганизованное меню)
         const buttons = [
-            { text: 'Играть', y: CONSTS.HEIGHT / 2 - 220, callback: () => this.scene.start('GameScene') },
-            { text: '1v1 Онлайн', y: CONSTS.HEIGHT / 2 - 170, callback: () => this.scene.start('MatchmakingScene') },
-            { text: 'Дуэли', y: CONSTS.HEIGHT / 2 - 120, callback: () => this.scene.start('DuelHistoryScene') },
-            { text: '🏆 Турниры', y: CONSTS.HEIGHT / 2 - 70, callback: () => this.scene.start('TournamentScene') },
-            { text: 'Рейтинг', y: CONSTS.HEIGHT / 2 - 20, callback: () => this.openLeaderboard() },
-            { text: '🎯 Достижения', y: CONSTS.HEIGHT / 2 + 30, callback: () => this.scene.start('AchievementsScene') },
-            { text: '💰 Награды', y: CONSTS.HEIGHT / 2 + 80, callback: () => this.scene.start('DailyRewardScene') },
-            { text: '📊 Статистика', y: CONSTS.HEIGHT / 2 + 130, callback: () => this.scene.start('StatsScene') },
-            { text: '🎁 Рефералы', y: CONSTS.HEIGHT / 2 + 180, callback: () => this.scene.start('ReferralScene') },
-            { text: '🎒 Инвентарь', y: CONSTS.HEIGHT / 2 + 230, callback: () => this.scene.start('InventoryScene') },
-            { text: '💎 Кошелёк', y: CONSTS.HEIGHT / 2 + 280, callback: () => this.scene.start('WalletScene') },
-            { text: '⭐ Магазин', y: CONSTS.HEIGHT / 2 + 330, callback: () => this.openWebShop() },
+            { text: '🎮 Играть', y: CONSTS.HEIGHT / 2 - 200, callback: () => this.scene.start('GameScene') },
+            { text: '⚔️ PvP', y: CONSTS.HEIGHT / 2 - 145, callback: () => this.scene.start('PvPMenuScene') },
+            { text: '🏆 Турниры', y: CONSTS.HEIGHT / 2 - 90, callback: () => this.scene.start('TournamentScene') },
+            { text: '📊 Рейтинг', y: CONSTS.HEIGHT / 2 - 35, callback: () => this.openLeaderboard() },
+            { text: '👤 Личный кабинет', y: CONSTS.HEIGHT / 2 + 20, callback: () => this.scene.start('ProfileScene') },
+            { text: '📈 Статистика', y: CONSTS.HEIGHT / 2 + 75, callback: () => this.scene.start('StatsScene') },
+            { text: '🎁 Рефералы', y: CONSTS.HEIGHT / 2 + 130, callback: () => this.scene.start('ReferralScene') },
+            { text: '⭐ Магазин', y: CONSTS.HEIGHT / 2 + 185, callback: () => this.openWebShop() },
         ];
 
         buttons.forEach(btnData => {
@@ -7193,6 +7189,210 @@ class ReferralScene extends Phaser.Scene {
     }
 }
 
+// ==================== PVP MENU SCENE ====================
+// Объединённое меню для дуэлей и 1v1 онлайн
+class PvPMenuScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'PvPMenuScene' });
+    }
+
+    create() {
+        // Фон
+        this.add.rectangle(0, 0, CONSTS.WIDTH, CONSTS.HEIGHT, 0x1a1a2e).setOrigin(0);
+        
+        // Заголовок
+        this.add.text(CONSTS.WIDTH / 2, 60, '⚔️ PvP Режимы', {
+            fontSize: '32px',
+            fill: '#FFD700',
+            fontFamily: 'Arial Black',
+            stroke: '#000',
+            strokeThickness: 4
+        }).setOrigin(0.5);
+        
+        // Описание
+        this.add.text(CONSTS.WIDTH / 2, 110, 'Выбери режим соревнования', {
+            fontSize: '14px',
+            fill: '#AAAAAA',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5);
+        
+        // Кнопка 1v1 Онлайн
+        this.createPvPButton(
+            CONSTS.HEIGHT / 2 - 80,
+            '🎮 1v1 Онлайн',
+            'Мгновенный матч с рандомным\nигроком в реальном времени',
+            0x4CAF50,
+            () => this.scene.start('MatchmakingScene')
+        );
+        
+        // Кнопка Дуэли
+        this.createPvPButton(
+            CONSTS.HEIGHT / 2 + 60,
+            '🎯 Дуэли',
+            'Вызови друга по ссылке!\nИграйте когда удобно',
+            0x2196F3,
+            () => this.scene.start('DuelHistoryScene')
+        );
+        
+        // Кнопка назад
+        const backBtn = this.add.text(CONSTS.WIDTH / 2, CONSTS.HEIGHT - 60, '← Назад', {
+            fontSize: '20px',
+            fill: '#FFFFFF',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        
+        backBtn.on('pointerover', () => backBtn.setFill('#FFD700'));
+        backBtn.on('pointerout', () => backBtn.setFill('#FFFFFF'));
+        backBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+    }
+    
+    createPvPButton(y, title, description, color, callback) {
+        // Фон кнопки
+        const btnBg = this.add.graphics();
+        btnBg.fillStyle(color, 0.3);
+        btnBg.fillRoundedRect(30, y - 50, CONSTS.WIDTH - 60, 100, 12);
+        btnBg.lineStyle(2, color, 1);
+        btnBg.strokeRoundedRect(30, y - 50, CONSTS.WIDTH - 60, 100, 12);
+        
+        // Интерактивная зона
+        const btnZone = this.add.rectangle(CONSTS.WIDTH / 2, y, CONSTS.WIDTH - 60, 100, 0x000000, 0)
+            .setInteractive({ useHandCursor: true });
+        
+        // Заголовок
+        const titleText = this.add.text(CONSTS.WIDTH / 2, y - 20, title, {
+            fontSize: '22px',
+            fill: '#FFFFFF',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        // Описание
+        this.add.text(CONSTS.WIDTH / 2, y + 18, description, {
+            fontSize: '12px',
+            fill: '#CCCCCC',
+            fontFamily: 'Arial',
+            align: 'center'
+        }).setOrigin(0.5);
+        
+        // Hover эффект
+        btnZone.on('pointerover', () => {
+            btnBg.clear();
+            btnBg.fillStyle(color, 0.5);
+            btnBg.fillRoundedRect(30, y - 50, CONSTS.WIDTH - 60, 100, 12);
+            btnBg.lineStyle(2, color, 1);
+            btnBg.strokeRoundedRect(30, y - 50, CONSTS.WIDTH - 60, 100, 12);
+        });
+        
+        btnZone.on('pointerout', () => {
+            btnBg.clear();
+            btnBg.fillStyle(color, 0.3);
+            btnBg.fillRoundedRect(30, y - 50, CONSTS.WIDTH - 60, 100, 12);
+            btnBg.lineStyle(2, color, 1);
+            btnBg.strokeRoundedRect(30, y - 50, CONSTS.WIDTH - 60, 100, 12);
+        });
+        
+        btnZone.on('pointerdown', callback);
+    }
+}
+
+// ==================== PROFILE SCENE ====================
+// Личный кабинет: достижения, награды, инвентарь, кошелёк
+class ProfileScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'ProfileScene' });
+    }
+
+    create() {
+        // Фон
+        this.add.rectangle(0, 0, CONSTS.WIDTH, CONSTS.HEIGHT, 0x1a1a2e).setOrigin(0);
+        
+        // Заголовок
+        const userData = getTelegramUserId();
+        this.add.text(CONSTS.WIDTH / 2, 50, '👤 Личный кабинет', {
+            fontSize: '28px',
+            fill: '#FFD700',
+            fontFamily: 'Arial Black',
+            stroke: '#000',
+            strokeThickness: 4
+        }).setOrigin(0.5);
+        
+        // Имя пользователя
+        this.add.text(CONSTS.WIDTH / 2, 95, `@${userData.username}`, {
+            fontSize: '16px',
+            fill: '#AAAAAA',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5);
+        
+        // Кнопки личного кабинета
+        const profileButtons = [
+            { text: '🎯 Достижения', y: 170, color: 0xE91E63, scene: 'AchievementsScene' },
+            { text: '💰 Награды', y: 240, color: 0xFFD700, scene: 'DailyRewardScene' },
+            { text: '🎒 Инвентарь', y: 310, color: 0x9C27B0, scene: 'InventoryScene' },
+            { text: '💎 Кошелёк', y: 380, color: 0x00BCD4, scene: 'WalletScene' },
+        ];
+        
+        profileButtons.forEach(btn => {
+            this.createProfileButton(btn.y, btn.text, btn.color, () => this.scene.start(btn.scene));
+        });
+        
+        // Кнопка назад
+        const backBtn = this.add.text(CONSTS.WIDTH / 2, CONSTS.HEIGHT - 60, '← Назад в меню', {
+            fontSize: '20px',
+            fill: '#FFFFFF',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        
+        backBtn.on('pointerover', () => backBtn.setFill('#FFD700'));
+        backBtn.on('pointerout', () => backBtn.setFill('#FFFFFF'));
+        backBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+    }
+    
+    createProfileButton(y, text, color, callback) {
+        // Фон кнопки
+        const btnBg = this.add.graphics();
+        btnBg.fillStyle(color, 0.25);
+        btnBg.fillRoundedRect(40, y - 28, CONSTS.WIDTH - 80, 56, 10);
+        btnBg.lineStyle(2, color, 0.8);
+        btnBg.strokeRoundedRect(40, y - 28, CONSTS.WIDTH - 80, 56, 10);
+        
+        // Интерактивная зона
+        const btnZone = this.add.rectangle(CONSTS.WIDTH / 2, y, CONSTS.WIDTH - 80, 56, 0x000000, 0)
+            .setInteractive({ useHandCursor: true });
+        
+        // Текст
+        const btnText = this.add.text(CONSTS.WIDTH / 2, y, text, {
+            fontSize: '20px',
+            fill: '#FFFFFF',
+            fontFamily: 'Arial Black'
+        }).setOrigin(0.5);
+        
+        // Стрелка
+        this.add.text(CONSTS.WIDTH - 60, y, '›', {
+            fontSize: '28px',
+            fill: '#666666',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5);
+        
+        // Hover эффект
+        btnZone.on('pointerover', () => {
+            btnBg.clear();
+            btnBg.fillStyle(color, 0.4);
+            btnBg.fillRoundedRect(40, y - 28, CONSTS.WIDTH - 80, 56, 10);
+            btnBg.lineStyle(2, color, 1);
+            btnBg.strokeRoundedRect(40, y - 28, CONSTS.WIDTH - 80, 56, 10);
+        });
+        
+        btnZone.on('pointerout', () => {
+            btnBg.clear();
+            btnBg.fillStyle(color, 0.25);
+            btnBg.fillRoundedRect(40, y - 28, CONSTS.WIDTH - 80, 56, 10);
+            btnBg.lineStyle(2, color, 0.8);
+            btnBg.strokeRoundedRect(40, y - 28, CONSTS.WIDTH - 80, 56, 10);
+        });
+        
+        btnZone.on('pointerdown', callback);
+    }
+}
+
 // Конфиг Phaser
 const config = {
     type: Phaser.CANVAS, // Canvas рендерер - четче для текста чем WebGL
@@ -7215,7 +7415,7 @@ const config = {
             debug: CONSTS.DEBUG_PHYSICS
         },
     },
-    scene: [MenuScene, LeaderboardScene, InventoryScene, StatsScene, WalletScene, AchievementsScene, DailyRewardScene, ReferralScene, TournamentScene, MatchmakingScene, DuelHistoryScene, GameScene]
+    scene: [MenuScene, LeaderboardScene, InventoryScene, StatsScene, WalletScene, AchievementsScene, DailyRewardScene, ReferralScene, TournamentScene, MatchmakingScene, DuelHistoryScene, PvPMenuScene, ProfileScene, GameScene]
 };
 
 // Инициализация
