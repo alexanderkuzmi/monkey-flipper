@@ -3943,53 +3943,56 @@ class GameScene extends Phaser.Scene {
             fontFamily: 'Arial' 
         }).setOrigin(0.5).setScrollFactor(0).setDepth(15);
 
-        // Кнопка "Рестарт" (поднимаем выше на 40px)
-        const restartGraphics = this.add.graphics().setDepth(150); // ФИКС: Увеличен depth выше сенсорных зон (90)
-        restartGraphics.fillStyle(0x4CAF50, 1);
-        restartGraphics.fillRoundedRect(CONSTS.WIDTH / 2 - 140, CONSTS.HEIGHT / 2 + 45, 120, 45, 8);
-        restartGraphics.setScrollFactor(0);
+        // НОВОЕ: В режиме дуэли НЕ показываем кнопку "Заново" - только меню
+        const isDuelMode = this.gameMode === 'duel';
 
-        // ФИКС: Создаем невидимую интерактивную зону ПОВЕРХ кнопки (поднимаем выше на 40px)
-        const restartZone = this.add.rectangle(CONSTS.WIDTH / 2 - 80, CONSTS.HEIGHT / 2 + 67, 120, 45, 0x000000, 0)
-            .setOrigin(0.5)
-            .setScrollFactor(0)
-            .setDepth(151) // ФИКС: Еще выше
-            .setInteractive({ useHandCursor: true });
+        // Кнопка "Рестарт" (только для обычного режима)
+        if (!isDuelMode) {
+            const restartGraphics = this.add.graphics().setDepth(150);
+            restartGraphics.fillStyle(0x4CAF50, 1);
+            restartGraphics.fillRoundedRect(CONSTS.WIDTH / 2 - 140, CONSTS.HEIGHT / 2 + 45, 120, 45, 8);
+            restartGraphics.setScrollFactor(0);
 
-        const restartText = this.add.text(CONSTS.WIDTH / 2 - 80, CONSTS.HEIGHT / 2 + 67, 'Заново', { 
-            fontSize: '20px', 
-            fill: '#FFF', 
-            fontFamily: 'Arial Black' 
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(152); // ФИКС: Текст поверх всего
-        
-        restartZone.on('pointerdown', () => {
-            console.log('🔄🔄🔄 РЕСТАРТ НАЖАТ! Перезапускаем игру...');
-            this.scene.restart();
+            const restartZone = this.add.rectangle(CONSTS.WIDTH / 2 - 80, CONSTS.HEIGHT / 2 + 67, 120, 45, 0x000000, 0)
+                .setOrigin(0.5)
+                .setScrollFactor(0)
+                .setDepth(151)
+                .setInteractive({ useHandCursor: true });
 
-        });
+            const restartText = this.add.text(CONSTS.WIDTH / 2 - 80, CONSTS.HEIGHT / 2 + 67, 'Заново', { 
+                fontSize: '20px', 
+                fill: '#FFF', 
+                fontFamily: 'Arial Black' 
+            }).setOrigin(0.5).setScrollFactor(0).setDepth(152);
+            
+            restartZone.on('pointerdown', () => {
+                console.log('🔄🔄🔄 РЕСТАРТ НАЖАТ! Перезапускаем игру...');
+                this.scene.restart();
+            });
+        }
 
-        // Кнопка "Меню" (поднимаем выше на 40px)
-        const menuGraphics = this.add.graphics().setDepth(150); // ФИКС: Увеличен depth выше сенсорных зон (90)
+        // Кнопка "Меню" - в режиме дуэли по центру, иначе справа
+        const menuBtnX = isDuelMode ? CONSTS.WIDTH / 2 : CONSTS.WIDTH / 2 + 80;
+        const menuGraphics = this.add.graphics().setDepth(150);
         menuGraphics.fillStyle(0x2196F3, 1);
-        menuGraphics.fillRoundedRect(CONSTS.WIDTH / 2 + 20, CONSTS.HEIGHT / 2 + 45, 120, 45, 8);
+        const menuBtnWidth = isDuelMode ? 160 : 120;
+        menuGraphics.fillRoundedRect(menuBtnX - menuBtnWidth / 2, CONSTS.HEIGHT / 2 + 45, menuBtnWidth, 45, 8);
         menuGraphics.setScrollFactor(0);
 
-        // ФИКС: Создаем невидимую интерактивную зону ПОВЕРХ кнопки (поднимаем выше на 40px)
-        const menuZone = this.add.rectangle(CONSTS.WIDTH / 2 + 80, CONSTS.HEIGHT / 2 + 67, 120, 45, 0x000000, 0)
+        const menuZone = this.add.rectangle(menuBtnX, CONSTS.HEIGHT / 2 + 67, menuBtnWidth, 45, 0x000000, 0)
             .setOrigin(0.5)
             .setScrollFactor(0)
-            .setDepth(151) // ФИКС: Еще выше
+            .setDepth(151)
             .setInteractive({ useHandCursor: true });
 
-        const menuText = this.add.text(CONSTS.WIDTH / 2 + 80, CONSTS.HEIGHT / 2 + 67, 'Меню', { 
+        const menuText = this.add.text(menuBtnX, CONSTS.HEIGHT / 2 + 67, 'Меню', { 
             fontSize: '20px', 
             fill: '#FFF', 
             fontFamily: 'Arial Black' 
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(152); // ФИКС: Текст поверх всего
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(152);
         
         menuZone.on('pointerdown', () => {
             console.log('🔙🔙🔙 МЕНЮ НАЖАТО! Выход в меню...');
-            // ФИКС: Останавливаем GameScene перед запуском MenuScene (важно для Telegram!)
             this.scene.stop('GameScene');
             this.scene.start('MenuScene');
         });
@@ -4111,14 +4114,14 @@ class GameScene extends Phaser.Scene {
     
     // Экран ожидания результата соперника (после игры)
     showWaitingForOpponent(myScore) {
-        // Создаем overlay поверх Game Over экрана
+        // Создаем overlay поверх Game Over экрана (depth 200+ чтобы быть выше кнопок)
         const overlay = this.add.rectangle(
             0, 0,
             CONSTS.WIDTH,
             CONSTS.HEIGHT,
             0x000000,
-            0.9
-        ).setOrigin(0, 0).setScrollFactor(0).setDepth(20);
+            0.95
+        ).setOrigin(0, 0).setScrollFactor(0).setDepth(200);
         
         // Заголовок
         this.add.text(
@@ -4132,7 +4135,7 @@ class GameScene extends Phaser.Scene {
                 stroke: '#000',
                 strokeThickness: 4
             }
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(21);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(201);
         
         // Твой результат
         this.add.text(
@@ -4144,7 +4147,7 @@ class GameScene extends Phaser.Scene {
                 fill: '#FFD700',
                 fontFamily: 'Arial Black'
             }
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(21);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(201);
         
         // Информация об ожидании
         this.add.text(
@@ -4157,7 +4160,7 @@ class GameScene extends Phaser.Scene {
                 fontFamily: 'Arial',
                 align: 'center'
             }
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(21);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(201);
         
         // Анимация точек
         const dotsText = this.add.text(
@@ -4169,7 +4172,7 @@ class GameScene extends Phaser.Scene {
                 fill: '#FFD700',
                 fontFamily: 'Arial Black'
             }
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(21);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(201);
         
         let dotCount = 1;
         const dotsTimer = this.time.addEvent({
@@ -4181,30 +4184,31 @@ class GameScene extends Phaser.Scene {
             }
         });
         
-        // Кнопка "К дуэлям" для проверки позже
+        // Кнопка "В меню"
         const menuBtn = this.add.rectangle(
             CONSTS.WIDTH / 2,
             CONSTS.HEIGHT / 2 + 120,
-            220,
+            200,
             50,
-            0x34495e
-        ).setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(21);
+            0x2196F3
+        ).setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(201);
         
         this.add.text(
             CONSTS.WIDTH / 2,
             CONSTS.HEIGHT / 2 + 120,
-            '← К списку дуэлей',
+            '← В меню',
             {
-                fontSize: '16px',
+                fontSize: '18px',
                 fill: '#FFFFFF',
-                fontFamily: 'Arial'
+                fontFamily: 'Arial Black'
             }
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(21);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(202);
         
         menuBtn.on('pointerdown', () => {
             dotsTimer.remove();
             if (this.checkTimer) this.checkTimer.remove();
-            this.scene.start('DuelHistoryScene');
+            this.scene.stop('GameScene');
+            this.scene.start('MenuScene');
         });
         
         // Опрос API каждые 3 секунды
@@ -4259,19 +4263,19 @@ class GameScene extends Phaser.Scene {
             statusColor = '#e74c3c';
         }
         
-        // Overlay
+        // Overlay (depth 200+ чтобы быть выше всех кнопок)
         const overlay = this.add.rectangle(
             0, 0,
             CONSTS.WIDTH,
             CONSTS.HEIGHT,
             0x000000,
-            0.9
-        ).setOrigin(0, 0).setScrollFactor(0).setDepth(25);
+            0.95
+        ).setOrigin(0, 0).setScrollFactor(0).setDepth(200);
         
         // Результат
         this.add.text(
             CONSTS.WIDTH / 2,
-            CONSTS.HEIGHT / 2 - 120,
+            CONSTS.HEIGHT / 2 - 100,
             statusText,
             {
                 fontSize: '48px',
@@ -4280,75 +4284,53 @@ class GameScene extends Phaser.Scene {
                 stroke: '#000',
                 strokeThickness: 6
             }
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(26);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(201);
         
         // Счета
         this.add.text(
             CONSTS.WIDTH / 2,
-            CONSTS.HEIGHT / 2 - 20,
-            `You: ${myScore}`,
+            CONSTS.HEIGHT / 2,
+            `Вы: ${myScore}`,
             {
                 fontSize: '28px',
                 fill: '#FFFFFF',
                 fontFamily: 'Arial Black'
             }
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(26);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(201);
         
         this.add.text(
             CONSTS.WIDTH / 2,
-            CONSTS.HEIGHT / 2 + 30,
-            `${this.opponentUsername}: ${opponentScore}`,
+            CONSTS.HEIGHT / 2 + 50,
+            `${this.opponentUsername || 'Соперник'}: ${opponentScore}`,
             {
                 fontSize: '28px',
                 fill: '#FFFFFF',
                 fontFamily: 'Arial Black'
             }
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(26);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(201);
         
-        // Кнопки
-        const rematchBtn = this.add.rectangle(
-            CONSTS.WIDTH / 2,
-            CONSTS.HEIGHT / 2 + 100,
-            200,
-            50,
-            0xFF6B35
-        ).setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(26);
-        
-        this.add.text(
-            CONSTS.WIDTH / 2,
-            CONSTS.HEIGHT / 2 + 100,
-            '🔄 Rematch',
-            {
-                fontSize: '20px',
-                fill: '#FFFFFF',
-                fontFamily: 'Arial Black'
-            }
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(26);
-        
-        rematchBtn.on('pointerdown', () => {
-            this.scene.start('DuelHistoryScene');
-        });
-        
+        // Кнопка "В меню" (только одна кнопка, по центру)
         const menuBtn = this.add.rectangle(
             CONSTS.WIDTH / 2,
-            CONSTS.HEIGHT / 2 + 170,
+            CONSTS.HEIGHT / 2 + 130,
             200,
             50,
-            0x34495e
-        ).setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(26);
+            0x2196F3
+        ).setInteractive({ useHandCursor: true }).setScrollFactor(0).setDepth(201);
         
         this.add.text(
             CONSTS.WIDTH / 2,
-            CONSTS.HEIGHT / 2 + 170,
-            '← Menu',
+            CONSTS.HEIGHT / 2 + 130,
+            '← В меню',
             {
                 fontSize: '20px',
                 fill: '#FFFFFF',
-                fontFamily: 'Arial'
+                fontFamily: 'Arial Black'
             }
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(26);
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(202);
         
         menuBtn.on('pointerdown', () => {
+            this.scene.stop('GameScene');
             this.scene.start('MenuScene');
         });
     }
