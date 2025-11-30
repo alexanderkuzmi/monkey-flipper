@@ -3391,9 +3391,10 @@ class GameScene extends Phaser.Scene {
             const platformY = playerStartY - gap;
             
             // Используем seeded RNG для X позиции в 1v1 режиме
+            // ФИКС: Отступ 80px от краёв экрана
             const platformX = this.gameMode === '1v1' && this.seededRandom
-                ? this.seededRandom.intRange(100, CONSTS.WIDTH - 100)
-                : Phaser.Math.Between(100, CONSTS.WIDTH - 100);
+                ? this.seededRandom.intRange(80, CONSTS.WIDTH - 80)
+                : Phaser.Math.Between(80, CONSTS.WIDTH - 80);
             
             // Строка 526 (в createPlatforms)
             let platform = this.platforms.create(platformX, platformY, 'platform');
@@ -4703,7 +4704,8 @@ class GameScene extends Phaser.Scene {
             platform.body.checkCollision.none = false; // Включаем коллизии обратно
             platform.setAlpha(1); // Восстанавливаем полную непрозрачность
             
-            platform.x = Phaser.Math.Between(0, CONSTS.WIDTH);
+            // ФИКС: Отступ 80px от краёв экрана
+            platform.x = Phaser.Math.Between(80, CONSTS.WIDTH - 80);
             const randomGap = Phaser.Math.Between(200, 280);
             
             // ФИКС: Если земля появилась - размещаем платформы ВЫШЕ игрока (не используем minPlatformY!)
