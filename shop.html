@@ -297,6 +297,18 @@
     </style>
 </head>
 <body>
+    <!-- TESTNET индикатор -->
+    <div id="testnetBanner" style="display: none; background: #ff6600; color: white; text-align: center; padding: 8px; font-weight: bold; position: fixed; top: 0; left: 0; right: 0; z-index: 9999;">
+        ⚠️ TON TESTNET MODE - Используются тестовые TON
+    </div>
+    <script>
+        // Показываем баннер если testnet включён
+        if (typeof USE_TON_TESTNET === 'undefined' || USE_TON_TESTNET) {
+            document.getElementById('testnetBanner').style.display = 'block';
+            document.body.style.paddingTop = '36px';
+        }
+    </script>
+    
     <div class="header">
         <h1>🛍️ Магазин</h1>
         <button onclick="goToGame()" style="margin-top: 10px; padding: 10px 20px; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; color: white; font-size: 16px; cursor: pointer;">
@@ -367,6 +379,13 @@
     </div>
 
     <script>
+        // ==================== TON TESTNET CONFIGURATION ====================
+        const USE_TON_TESTNET = true;
+        const TON_CONFIG = {
+            network: USE_TON_TESTNET ? 'testnet' : 'mainnet',
+            testnetWallet: '0QAuolwKTSJL7oym-YjpjLDhsoEHbr-sVQcc6gRIKkhH_VZI'
+        };
+        
         // Конфигурация API
         const API_URL = window.location.hostname === 'localhost'
             ? 'http://localhost:3001'
@@ -986,10 +1005,18 @@
 
                 // Инициализируем TON Connect если ещё не сделано
                 if (!tonConnectUI) {
-                    tonConnectUI = new TonConnectUIClass({
+                    const connectOptions = {
                         manifestUrl: 'https://monkey-flipper-djm1.onrender.com/tonconnect-manifest.json',
                         buttonRootId: null
-                    });
+                    };
+                    
+                    // Добавляем настройку сети для testnet
+                    if (USE_TON_TESTNET) {
+                        connectOptions.network = 'testnet';
+                    }
+                    
+                    tonConnectUI = new TonConnectUIClass(connectOptions);
+                    console.log('🔗 TonConnectUI инициализирован для', USE_TON_TESTNET ? 'TESTNET' : 'MAINNET');
                     
                     // Ждём восстановления сессии
                     await new Promise(resolve => setTimeout(resolve, 500));
@@ -1137,10 +1164,16 @@
             try {
                 const TonConnectUIClass = window.TON_CONNECT_UI?.TonConnectUI || window.TonConnectUI;
                 if (!tonConnectUI && TonConnectUIClass) {
-                    tonConnectUI = new TonConnectUIClass({
+                    const connectOptions = {
                         manifestUrl: 'https://monkey-flipper-djm1.onrender.com/tonconnect-manifest.json',
                         buttonRootId: null
-                    });
+                    };
+                    
+                    if (USE_TON_TESTNET) {
+                        connectOptions.network = 'testnet';
+                    }
+                    
+                    tonConnectUI = new TonConnectUIClass(connectOptions);
                 }
                 
                 if (tonConnectUI) {

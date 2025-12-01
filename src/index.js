@@ -22,6 +22,15 @@ class SeededRandom {
     }
 }
 
+// ==================== TON TESTNET CONFIGURATION ====================
+// ВКЛЮЧИТЬ ДЛЯ ТЕСТИРОВАНИЯ TON ПЛАТЕЖЕЙ
+const USE_TON_TESTNET = true;
+const TON_CONFIG = {
+    network: USE_TON_TESTNET ? 'testnet' : 'mainnet',
+    // Тестовый кошелек для приема платежей
+    testnetWallet: '0QAuolwKTSJL7oym-YjpjLDhsoEHbr-sVQcc6gRIKkhH_VZI'
+};
+
 // ==================== SERVER CONFIGURATION ====================
 // Socket.IO сервер (Render) - для 1v1 матчмейкинга
 const SOCKET_SERVER_URL = window.location.hostname === 'localhost' 

@@ -2729,8 +2729,18 @@ app.post('/api/shop/create-stars-invoice', validateShopAuth, async (req, res) =>
 
 // ==================== TON PAYMENT ====================
 
-// Адрес кошелька для приема TON платежей (настройте в .env)
-const TON_WALLET_ADDRESS = process.env.TON_WALLET_ADDRESS || 'UQD-example-wallet-address';
+// TON TESTNET CONFIGURATION
+const USE_TON_TESTNET = true;
+const TON_CONFIG = {
+    network: USE_TON_TESTNET ? 'testnet' : 'mainnet',
+    // Тестовый кошелек для приема платежей
+    testnetWallet: '0QAuolwKTSJL7oym-YjpjLDhsoEHbr-sVQcc6gRIKkhH_VZI'
+};
+
+// Адрес кошелька для приема TON платежей
+const TON_WALLET_ADDRESS = USE_TON_TESTNET 
+    ? TON_CONFIG.testnetWallet 
+    : (process.env.TON_WALLET_ADDRESS || 'UQD-example-wallet-address');
 
 /**
  * Создать данные для TON транзакции
