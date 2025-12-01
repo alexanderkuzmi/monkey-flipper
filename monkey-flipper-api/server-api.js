@@ -2729,23 +2729,8 @@ app.post('/api/shop/create-stars-invoice', validateShopAuth, async (req, res) =>
 
 // ==================== TON PAYMENT ====================
 
-// ПЕРЕКЛЮЧАТЕЛЬ: true = testnet (для тестирования), false = mainnet (продакшн)
-const USE_TON_TESTNET = process.env.USE_TON_TESTNET === 'true' || true;  // ← ИЗМЕНИ НА false ДЛЯ ПРОДАКШЕНА!
-
-// Адреса кошельков (user-friendly формат)
-// ВАЖНО: Для testnet используй адрес из Tonkeeper в режиме testnet!
-// Получить тестовые TON: https://t.me/testgiver_ton_bot
-const TON_TESTNET_WALLET = '0QAuolwKTSJL7oym-YjpjLDhsoEHbr-sVQcc6gRIKkhH_VZI';  // Твой testnet кошелёк
-const TON_MAINNET_WALLET = process.env.TON_WALLET_ADDRESS || 'UQD-example-wallet-address';  // Продакшн кошелёк
-
-// Выбираем кошелёк в зависимости от режима
-const TON_WALLET_ADDRESS = USE_TON_TESTNET ? TON_TESTNET_WALLET : TON_MAINNET_WALLET;
-
-console.log(`💎 TON Network: ${USE_TON_TESTNET ? 'TESTNET' : 'MAINNET'}`);
-console.log(`💰 TON Wallet: ${TON_WALLET_ADDRESS}`);
-if (USE_TON_TESTNET) {
-    console.log('⚠️ ТЕСТОВЫЙ РЕЖИМ TON! Используется testnet кошелёк');
-}
+// Адрес кошелька для приема TON платежей (настройте в .env)
+const TON_WALLET_ADDRESS = process.env.TON_WALLET_ADDRESS || 'UQD-example-wallet-address';
 
 /**
  * Создать данные для TON транзакции

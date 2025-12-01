@@ -303,11 +303,6 @@
             🎮 Вернуться в игру
         </button>
     </div>
-    
-    <!-- TESTNET Баннер - показывается только в тестовом режиме -->
-    <div id="testnet-banner" style="display: none; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); padding: 8px; text-align: center; font-size: 12px; font-weight: bold; color: white; margin-bottom: 10px; border-radius: 8px; margin: 0 10px 10px 10px;">
-        ⚠️ ТЕСТОВЫЙ РЕЖИМ TON (Testnet) - монеты не настоящие!
-    </div>
 
     <div class="balance-section">
         <div class="balance-card" style="flex: 2;">
@@ -372,21 +367,6 @@
     </div>
 
     <script>
-        // ==================== TON NETWORK CONFIGURATION ====================
-        // ПЕРЕКЛЮЧАТЕЛЬ: true = testnet (для тестирования), false = mainnet (продакшн)
-        const USE_TON_TESTNET = true;  // ← ИЗМЕНИ НА false ДЛЯ ПРОДАКШЕНА!
-        
-        // Конфигурация TON сети
-        const TON_CONFIG = {
-            network: USE_TON_TESTNET ? 'testnet' : 'mainnet',
-            testnetWallet: '0QAuolwKTSJL7oym-YjpjLDhsoEHbr-sVQcc6gRIKkhH_VZI'
-        };
-        
-        console.log(`💎 TON Network: ${TON_CONFIG.network.toUpperCase()}`);
-        if (USE_TON_TESTNET) {
-            console.log('⚠️ ТЕСТОВЫЙ РЕЖИМ TON! Используется testnet');
-        }
-    
         // Конфигурация API
         const API_URL = window.location.hostname === 'localhost'
             ? 'http://localhost:3001'
@@ -420,14 +400,6 @@
         // Инициализация
         async function init() {
             try {
-                // Показываем баннер testnet если включён тестовый режим
-                if (USE_TON_TESTNET) {
-                    const testnetBanner = document.getElementById('testnet-banner');
-                    if (testnetBanner) {
-                        testnetBanner.style.display = 'block';
-                    }
-                }
-                
                 // Получаем userId из Telegram (приоритет: WebApp > URL параметр)
                 if (tg?.initDataUnsafe?.user?.id) {
                     userId = tg.initDataUnsafe.user.id;
@@ -1014,19 +986,10 @@
 
                 // Инициализируем TON Connect если ещё не сделано
                 if (!tonConnectUI) {
-                    // НОВОЕ: Добавляем параметры для testnet
-                    const tonConnectOptions = {
+                    tonConnectUI = new TonConnectUIClass({
                         manifestUrl: 'https://monkey-flipper-djm1.onrender.com/tonconnect-manifest.json',
                         buttonRootId: null
-                    };
-                    
-                    // Для testnet добавляем параметр сети
-                    if (USE_TON_TESTNET) {
-                        tonConnectOptions.network = 'testnet';
-                        console.log('💎 TON Connect: Инициализация в TESTNET режиме');
-                    }
-                    
-                    tonConnectUI = new TonConnectUIClass(tonConnectOptions);
+                    });
                     
                     // Ждём восстановления сессии
                     await new Promise(resolve => setTimeout(resolve, 500));

@@ -36,24 +36,6 @@ const API_SERVER_URL = window.location.hostname === 'localhost'
 // Старая переменная для обратной совместимости (используется в Socket.IO коде)
 const SERVER_URL = SOCKET_SERVER_URL;  
 
-// ==================== TON NETWORK CONFIGURATION ====================
-// ПЕРЕКЛЮЧАТЕЛЬ: true = testnet (для тестирования), false = mainnet (продакшн)
-const USE_TON_TESTNET = true;  // ← ИЗМЕНИ НА false ДЛЯ ПРОДАКШЕНА!
-
-// Конфигурация TON сети
-const TON_CONFIG = {
-    network: USE_TON_TESTNET ? 'testnet' : 'mainnet',
-    // Тестовый кошелёк для testnet
-    testnetWallet: '0QAuolwKTSJL7oym-YjpjLDhsoEHbr-sVQcc6gRIKkhH_VZI',
-    // Mainnet кошелёк (продакшн)
-    mainnetWallet: 'UQD-your-mainnet-wallet'
-};
-
-console.log(`💎 TON Network: ${TON_CONFIG.network.toUpperCase()}`);
-if (USE_TON_TESTNET) {
-    console.log('⚠️ ТЕСТОВЫЙ РЕЖИМ TON! Используется testnet');
-}
-
 // НОВОЕ: Функция получения Telegram User ID
 function getTelegramUserId() {
     try {
@@ -5756,20 +5738,10 @@ class WalletScene extends Phaser.Scene {
 
             // Создаём экземпляр TON Connect UI
             // Манифест хостится на API сервере
-            // НОВОЕ: Используем testnet если включён тестовый режим
-            const tonConnectOptions = {
+            this.tonConnectUI = new TonConnectUIClass({
                 manifestUrl: 'https://monkey-flipper-djm1.onrender.com/tonconnect-manifest.json',
                 buttonRootId: null // Мы не используем встроенную кнопку
-            };
-            
-            // Добавляем параметр сети для testnet
-            if (USE_TON_TESTNET) {
-                // Для testnet используем строку 'testnet'
-                tonConnectOptions.network = 'testnet';
-                console.log('💎 TON Connect: Используется TESTNET');
-            }
-            
-            this.tonConnectUI = new TonConnectUIClass(tonConnectOptions);
+            });
 
             // Подписываемся на изменения статуса подключения
             this.tonConnectUI.onStatusChange((wallet) => {
