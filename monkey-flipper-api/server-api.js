@@ -2916,14 +2916,35 @@ app.post('/api/shop/confirm-ton-payment', validateShopAuth, async (req, res) => 
     
     // Извлекаем itemId из transactionId (формат: ton_userId_itemId_timestamp)
     const parts = transactionId.split('_');
-    const itemId = parts[2];
+    console.log('📦 transactionId parts:', parts);
+    
+    // Формат: ton_userId_itemId_timestamp
+    // parts[0] = 'ton'
+    // parts[1] = userId
+    // parts[2] = itemId (может содержать _)
+    // parts[last] = timestamp
+    
+    // Берём itemId - это третий элемент, но он может состоять из нескольких частей
+    // Проверяем что parts[2] существует
+    let itemId = parts[2];
+    
+    // Если itemId начинается с известных префиксов, возможно нужно склеить части
+    if (parts.length > 4) {
+      // Если есть больше 4 частей, склеиваем всё между userId и timestamp
+      itemId = parts.slice(2, -1).join('_');
+    }
+    
+    console.log('📦 Extracted itemId:', itemId);
     
     // Загружаем товар
     const shopItems = JSON.parse(fs.readFileSync('./shop-items.json', 'utf8'));
-    const allItems = [...shopItems.skins, ...shopItems.nft_characters, ...shopItems.boosts];
+    const allItems = [...shopItems.skins, ...shopItems.nft_characters, ...shopItems.boosts, ...(shopItems.monkey_coin_items || [])];
+    console.log('📦 All item IDs:', allItems.map(i => i.id));
+    
     const item = allItems.find(i => i.id === itemId);
     
     if (!item) {
+      console.error('❌ Товар не найден. itemId:', itemId, 'Доступные:', allItems.map(i => i.id));
       return res.status(404).json({ 
         success: false, 
         error: 'Товар не найден' 
