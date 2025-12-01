@@ -2735,7 +2735,7 @@ const USE_TON_TESTNET = process.env.USE_TON_TESTNET === 'true' || true;  // ← 
 // Адреса кошельков (user-friendly формат)
 // ВАЖНО: Для testnet используй адрес из Tonkeeper в режиме testnet!
 // Получить тестовые TON: https://t.me/testgiver_ton_bot
-const TON_TESTNET_WALLET = 'kQBsKCvLAb6ISCkfqL0h_gILKcQRasvT0-CvHRvILIgD7BUj';  // ЗАМЕНИ НА СВОЙ TESTNET АДРЕС!
+const TON_TESTNET_WALLET = '0QAuolwKTSJL7oym-YjpjLDhsoEHbr-sVQcc6gRIKkhH_VZI';  // Твой testnet кошелёк
 const TON_MAINNET_WALLET = process.env.TON_WALLET_ADDRESS || 'UQD-example-wallet-address';  // Продакшн кошелёк
 
 // Выбираем кошелёк в зависимости от режима

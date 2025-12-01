@@ -43,9 +43,8 @@ const USE_TON_TESTNET = true;  // ← ИЗМЕНИ НА false ДЛЯ ПРОДА�
 // Конфигурация TON сети
 const TON_CONFIG = {
     network: USE_TON_TESTNET ? 'testnet' : 'mainnet',
-    // Тестовый кошелёк для testnet - ЗАМЕНИ НА СВОЙ!
-    // Получить тестовые TON: https://t.me/testgiver_ton_bot
-    testnetWallet: 'kQBsKCvLAb6ISCkfqL0h_gILKcQRasvT0-CvHRvILIgD7BUj',
+    // Тестовый кошелёк для testnet
+    testnetWallet: '0QAuolwKTSJL7oym-YjpjLDhsoEHbr-sVQcc6gRIKkhH_VZI',
     // Mainnet кошелёк (продакшн)
     mainnetWallet: 'UQD-your-mainnet-wallet'
 };
