@@ -2776,10 +2776,10 @@ class GameScene extends Phaser.Scene {
         // scrollFactor 0.2 - фон двигается ОЧЕНЬ медленно (20% от скорости камеры)
         // Это позволяет использовать МАЛЕНЬКИЙ масштаб без риска что фон закончится
         this.backgroundLayers = {
-            back1: this.add.image(bgCenterX, bgCenterY, 'back_1').setOrigin(1, 1).setScrollFactor(0.2, 0.2),
-            back2: this.add.image(bgCenterX, bgCenterY, 'back_2').setOrigin(1, 1).setScrollFactor(0.2, 0.2),
-            back3: this.add.image(bgCenterX, bgCenterY, 'back_3').setOrigin(1, 1).setScrollFactor(0.2, 0.2),
-            back4: this.add.image(bgCenterX, bgCenterY, 'back_4').setOrigin(1, 1).setScrollFactor(0.2, 0.2)
+            back1: this.add.image(bgCenterX, bgCenterY, 'back_1').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2),
+            back2: this.add.image(bgCenterX, bgCenterY, 'back_2').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2),
+            back3: this.add.image(bgCenterX, bgCenterY, 'back_3').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2),
+            back4: this.add.image(bgCenterX, bgCenterY, 'back_4').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2)
         };
         
         // ФИКС: Показываем фон в меньшем масштабе чтобы видеть детали
