@@ -2651,7 +2651,15 @@ class GameScene extends Phaser.Scene {
 }
 
     preload() {
+        // НОВОЕ: Загружаем 4 части фона для динамических переходов
+        this.load.image('back_1', 'assets/back_1.png'); // Низ (начало игры)
+        this.load.image('back_2', 'assets/back_2.png'); // Середина-низ
+        this.load.image('back_3', 'assets/back_3.png'); // Середина-верх
+        this.load.image('back_4', 'assets/back_4.png'); // Верх (высокий прыжок)
+        
+        // Старый фон как fallback
         this.load.image('background_img', 'assets/background.png');
+        
         this.load.image('playerSprite', 'assets/monkey_stand.png');
         this.load.image('playerJumpSprite', 'assets/monkey_jump.png');
         this.load.image('monkey_down_1', 'assets/monkey_down_1.png'); // НОВОЕ: Текстура падения 1
@@ -2759,9 +2767,29 @@ class GameScene extends Phaser.Scene {
         this.groundAppeared = false; // НОВОЕ: Сброс появления земли
         this.playerStartY = 0; // НОВОЕ: Сброс стартовой позиции
 
-        // Фон с растяжкой (stretch) без повторения
-        this.background = this.add.image(0, 0, 'background_img').setOrigin(0, 0).setScrollFactor(0);
-        this.background.setDisplaySize(CONSTS.WIDTH, CONSTS.HEIGHT); // Растягиваем на всю ширину и высоту
+        // НОВОЕ: Многослойная система фона с плавными переходами
+        // Создаем 4 слоя фона, которые будут плавно переключаться в зависимости от высоты
+        this.backgroundLayers = {
+            back1: this.add.image(0, 0, 'back_1').setOrigin(0, 0).setScrollFactor(0),
+            back2: this.add.image(0, 0, 'back_2').setOrigin(0, 0).setScrollFactor(0),
+            back3: this.add.image(0, 0, 'back_3').setOrigin(0, 0).setScrollFactor(0),
+            back4: this.add.image(0, 0, 'back_4').setOrigin(0, 0).setScrollFactor(0)
+        };
+        
+        // Растягиваем все слои на весь экран
+        Object.values(this.backgroundLayers).forEach(layer => {
+            layer.setDisplaySize(CONSTS.WIDTH, CONSTS.HEIGHT);
+            layer.setDepth(-10); // Самый задний слой
+        });
+        
+        // Изначально показываем только первый слой (низ)
+        this.backgroundLayers.back1.setAlpha(1);
+        this.backgroundLayers.back2.setAlpha(0);
+        this.backgroundLayers.back3.setAlpha(0);
+        this.backgroundLayers.back4.setAlpha(0);
+        
+        // Переменные для управления переходами фона
+        this.currentBackgroundHeight = 0; // Текущая высота игрока для расчета переходов
 
         // ФИКС: Более заметный счетчик (белый с черной обводкой)
         this.scoreText = this.add.text(16, 16, `Score: ${this.score}`, { 
@@ -2858,6 +2886,9 @@ class GameScene extends Phaser.Scene {
         const groundHalfHeight = ground.displayHeight / 2;
         const playerHalfHeight = playerHeight / 2;
         const playerY = ground.y - groundHalfHeight - playerHalfHeight;
+        
+        // НОВОЕ: Сохраняем начальную позицию игрока для расчета высоты прыжков
+        this.playerStartY = playerY;
 
         this.player = this.physics.add.sprite(CONSTS.WIDTH / 2, playerY, 'playerSprite');
         this.player.setScale(0.7);
@@ -4392,6 +4423,9 @@ class GameScene extends Phaser.Scene {
         return;
     }
     
+    // НОВОЕ: Обновляем фон в зависимости от высоты игрока
+    this.updateBackgroundTransitions();
+    
     // ==================== 1V1 MODE: SEND PLAYER UPDATES ====================
     // Отправляем обновления каждые 100ms
     if (this.gameMode === '1v1') {
@@ -4583,6 +4617,64 @@ class GameScene extends Phaser.Scene {
         this.lastBouncePlatform = null;
     }
 }
+
+    // НОВОЕ: Функция плавного перехода между слоями фона
+    updateBackgroundTransitions() {
+        if (!this.backgroundLayers || !this.player) return;
+        
+        // Определяем высоту игрока (чем выше прыгнул - тем больше высота)
+        // playerStartY устанавливается при создании игрока
+        const playerHeight = this.playerStartY - this.player.y;
+        
+        // Определяем зоны переходов (в пикселях высоты прыжка)
+        // back_1 (низ): 0 - 800
+        // back_2 (середина-низ): 600 - 1600  
+        // back_3 (середина-верх): 1400 - 2400
+        // back_4 (верх): 2200+
+        
+        const zones = [
+            { key: 'back1', start: 0, end: 800, layer: this.backgroundLayers.back1 },
+            { key: 'back2', start: 600, end: 1600, layer: this.backgroundLayers.back2 },
+            { key: 'back3', start: 1400, end: 2400, layer: this.backgroundLayers.back3 },
+            { key: 'back4', start: 2200, end: Infinity, layer: this.backgroundLayers.back4 }
+        ];
+        
+        // Рассчитываем альфа для каждого слоя
+        zones.forEach(zone => {
+            let alpha = 0;
+            
+            if (playerHeight >= zone.start && playerHeight <= zone.end) {
+                // Игрок в пределах зоны этого слоя
+                const zoneRange = zone.end - zone.start;
+                const positionInZone = playerHeight - zone.start;
+                
+                // Плавный fade-in в начале зоны (первые 20%)
+                if (positionInZone < zoneRange * 0.2) {
+                    alpha = positionInZone / (zoneRange * 0.2);
+                }
+                // Полная видимость в середине зоны (20% - 80%)
+                else if (positionInZone < zoneRange * 0.8) {
+                    alpha = 1;
+                }
+                // Плавный fade-out в конце зоны (последние 20%)
+                else {
+                    alpha = 1 - ((positionInZone - zoneRange * 0.8) / (zoneRange * 0.2));
+                }
+            } else if (playerHeight > zone.end) {
+                // Игрок выше зоны - полностью прозрачный
+                alpha = 0;
+            } else {
+                // Игрок ниже зоны - полностью прозрачный
+                alpha = 0;
+            }
+            
+            // Применяем альфа с плавной интерполяцией для избежания резких переходов
+            const currentAlpha = zone.layer.alpha;
+            const targetAlpha = Phaser.Math.Clamp(alpha, 0, 1);
+            const smoothAlpha = Phaser.Math.Linear(currentAlpha, targetAlpha, 0.05);
+            zone.layer.setAlpha(smoothAlpha);
+        });
+    }
 
     checkMovement() {
         const { player, aKey, dKey } = this;
@@ -4880,9 +4972,11 @@ class GameScene extends Phaser.Scene {
         const camera = this.cameras.main;
         camera.setSize(width, height);
         
-        // Обновляем фон под новый размер
-        if (this.background) {
-            this.background.setDisplaySize(width, height);
+        // Обновляем фон под новый размер - НОВОЕ: обновляем все слои
+        if (this.backgroundLayers) {
+            Object.values(this.backgroundLayers).forEach(layer => {
+                layer.setDisplaySize(width, height);
+            });
         }
         
         console.log('📐 Resize:', width, 'x', height);
