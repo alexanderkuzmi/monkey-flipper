@@ -2800,7 +2800,7 @@ class GameScene extends Phaser.Scene {
             // Небольшое увеличение для покрытия при параллаксе (1.2x вместо 1.5x)
             scale *= 1.2;
             
-            layer.setScale(scale);
+            //layer.setScale(scale);
             layer.setDepth(-10); // Самый задний слой
         });
         
