@@ -2784,12 +2784,21 @@ class GameScene extends Phaser.Scene {
         
         // ФИКС: Показываем фон в меньшем масштабе чтобы видеть детали
         // Фон 1080x1290, экран ~640x800 - поэтому делаем фон меньше
-       Object.values(this.backgroundLayers).forEach(layer => {
-    // Подгоняем строго по ширине - весь фон будет виден горизонтально
-    const scale = CONSTS.WIDTH / layer.texture.width;
-    layer.setScale(scale);
-    layer.setDepth(-10);
-});
+        Object.values(this.backgroundLayers).forEach(layer => {
+            const textureWidth = layer.texture.width;  // 1080
+            const textureHeight = layer.texture.height; // 1290
+            
+            // Рассчитываем какой масштаб нужен чтобы покрыть экран
+            const scaleX = CONSTS.WIDTH / textureWidth;   // например 640/1080 = 0.59
+            const scaleY = CONSTS.HEIGHT / textureHeight;  // например 800/1290 = 0.62
+            
+            // Берем меньший масштаб (contain) и уменьшаем/увеличиваем для оптимального вида
+            const baseScale = Math.min(scaleX, scaleY);
+            const scale = baseScale * 0.6; // 0.8 - показываем чуть больше чем экран
+            
+            layer.setScale(scale);
+            layer.setDepth(-10); // Самый задний слой
+        });
         
         // Изначально показываем только первый слой (низ)
         this.backgroundLayers.back1.setAlpha(1);
