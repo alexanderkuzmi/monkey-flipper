@@ -4624,56 +4624,61 @@ class GameScene extends Phaser.Scene {
         
         // Определяем высоту игрока (чем выше прыгнул - тем больше высота)
         // playerStartY устанавливается при создании игрока
-        const playerHeight = this.playerStartY - this.player.y;
+        const playerHeight = Math.max(0, this.playerStartY - this.player.y);
         
-        // Определяем зоны переходов (в пикселях высоты прыжка)
-        // back_1 (низ): 0 - 800
-        // back_2 (середина-низ): 600 - 1600  
-        // back_3 (середина-верх): 1400 - 2400
-        // back_4 (верх): 2200+
+        // НОВАЯ ЛОГИКА: Определяем точки переходов между слоями
+        // back_1: от 0 до 1000 (потом плавно исчезает)
+        // back_2: появляется на 800, главный от 1000 до 2000
+        // back_3: появляется на 1800, главный от 2000 до 3000  
+        // back_4: появляется на 2800, главный от 3000+
         
-        const zones = [
-            { key: 'back1', start: 0, end: 800, layer: this.backgroundLayers.back1 },
-            { key: 'back2', start: 600, end: 1600, layer: this.backgroundLayers.back2 },
-            { key: 'back3', start: 1400, end: 2400, layer: this.backgroundLayers.back3 },
-            { key: 'back4', start: 2200, end: Infinity, layer: this.backgroundLayers.back4 }
-        ];
+        const transitionRange = 400; // Зона плавного перехода между слоями
         
-        // Рассчитываем альфа для каждого слоя
-        zones.forEach(zone => {
-            let alpha = 0;
-            
-            if (playerHeight >= zone.start && playerHeight <= zone.end) {
-                // Игрок в пределах зоны этого слоя
-                const zoneRange = zone.end - zone.start;
-                const positionInZone = playerHeight - zone.start;
-                
-                // Плавный fade-in в начале зоны (первые 20%)
-                if (positionInZone < zoneRange * 0.2) {
-                    alpha = positionInZone / (zoneRange * 0.2);
-                }
-                // Полная видимость в середине зоны (20% - 80%)
-                else if (positionInZone < zoneRange * 0.8) {
-                    alpha = 1;
-                }
-                // Плавный fade-out в конце зоны (последние 20%)
-                else {
-                    alpha = 1 - ((positionInZone - zoneRange * 0.8) / (zoneRange * 0.2));
-                }
-            } else if (playerHeight > zone.end) {
-                // Игрок выше зоны - полностью прозрачный
-                alpha = 0;
-            } else {
-                // Игрок ниже зоны - полностью прозрачный
-                alpha = 0;
-            }
-            
-            // Применяем альфа с плавной интерполяцией для избежания резких переходов
-            const currentAlpha = zone.layer.alpha;
-            const targetAlpha = Phaser.Math.Clamp(alpha, 0, 1);
-            const smoothAlpha = Phaser.Math.Linear(currentAlpha, targetAlpha, 0.05);
-            zone.layer.setAlpha(smoothAlpha);
-        });
+        let alpha1 = 0, alpha2 = 0, alpha3 = 0, alpha4 = 0;
+        
+        if (playerHeight < 800) {
+            // Только первый слой
+            alpha1 = 1;
+        } else if (playerHeight < 800 + transitionRange) {
+            // Переход между 1 и 2
+            const progress = (playerHeight - 800) / transitionRange;
+            alpha1 = 1 - progress;
+            alpha2 = progress;
+        } else if (playerHeight < 1800) {
+            // Только второй слой
+            alpha2 = 1;
+        } else if (playerHeight < 1800 + transitionRange) {
+            // Переход между 2 и 3
+            const progress = (playerHeight - 1800) / transitionRange;
+            alpha2 = 1 - progress;
+            alpha3 = progress;
+        } else if (playerHeight < 2800) {
+            // Только третий слой
+            alpha3 = 1;
+        } else if (playerHeight < 2800 + transitionRange) {
+            // Переход между 3 и 4
+            const progress = (playerHeight - 2800) / transitionRange;
+            alpha3 = 1 - progress;
+            alpha4 = progress;
+        } else {
+            // Только четвертый слой
+            alpha4 = 1;
+        }
+        
+        // Применяем альфа с плавной интерполяцией для избежания резких переходов
+        const lerpSpeed = 0.1;
+        this.backgroundLayers.back1.setAlpha(
+            Phaser.Math.Linear(this.backgroundLayers.back1.alpha, alpha1, lerpSpeed)
+        );
+        this.backgroundLayers.back2.setAlpha(
+            Phaser.Math.Linear(this.backgroundLayers.back2.alpha, alpha2, lerpSpeed)
+        );
+        this.backgroundLayers.back3.setAlpha(
+            Phaser.Math.Linear(this.backgroundLayers.back3.alpha, alpha3, lerpSpeed)
+        );
+        this.backgroundLayers.back4.setAlpha(
+            Phaser.Math.Linear(this.backgroundLayers.back4.alpha, alpha4, lerpSpeed)
+        );
     }
 
     checkMovement() {
