@@ -2794,7 +2794,7 @@ class GameScene extends Phaser.Scene {
             
             // Берем меньший масштаб (contain) и уменьшаем до 0.6 чтобы видеть больше
             const baseScale = Math.min(scaleX, scaleY);
-            const scale = baseScale * 0.6; // Уменьшаем фон чтобы видеть все детали!
+            const scale = baseScale * 0.1; // Уменьшаем фон чтобы видеть все детали!
             
             layer.setScale(scale);
             layer.setDepth(-10); // Самый задний слой
