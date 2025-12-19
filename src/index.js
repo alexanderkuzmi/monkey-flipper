@@ -2779,9 +2779,9 @@ class GameScene extends Phaser.Scene {
             back4: this.add.image(bgCenterX, bgCenterY, 'back_4').setOrigin(0.5, 0.5).setScrollFactor(0.45)
         };
         
-        // Просто растягиваем фон на весь экран - КАК БЫЛО ИЗНАЧАЛЬНО
+        // Увеличиваем фон по вертикали в 5 раз, чтобы покрывал всю высоту игры
         Object.values(this.backgroundLayers).forEach(layer => {
-            layer.setDisplaySize(CONSTS.WIDTH, CONSTS.HEIGHT);
+            layer.setDisplaySize(CONSTS.WIDTH, CONSTS.HEIGHT * 5);
             layer.setDepth(-10);
         });
         
