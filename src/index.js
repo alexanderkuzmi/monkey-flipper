@@ -2800,7 +2800,7 @@ class GameScene extends Phaser.Scene {
             
             // Минимальное увеличение 1.05x - показываем почти весь фон
             // Так как scrollFactor маленький (0.4), фон не закончится при прыжках
-            scale *= 1.05;
+            scale *= 0.1;
             
             layer.setScale(scale);
             layer.setDepth(-10); // Самый задний слой
