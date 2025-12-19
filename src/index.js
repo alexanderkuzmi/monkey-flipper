@@ -2791,24 +2791,20 @@ class GameScene extends Phaser.Scene {
         this.groundAppeared = false; // НОВОЕ: Сброс появления земли
         this.playerStartY = 0; // НОВОЕ: Сброс стартовой позиции
 
-        // НОВОЕ: Многослойная система фона с плавными переходами
-        // Создаем 4 слоя фона с параллакс эффектом
-        // Origin в центре (0.5, 0.5) и позиция в центре экрана для правильного параллакса
+        // НОВОЕ: Многослойная система фона с плиткой (tile) и параллаксом
+        // Используем tileSprite, чтобы фон повторялся без черных полос при больших прыжках
         const bgCenterX = CONSTS.WIDTH / 2;
         const bgCenterY = CONSTS.HEIGHT / 2;
-        
-        // scrollFactor 0.2 - фон двигается ОЧЕНЬ медленно (20% от скорости камеры)
-        // Это позволяет использовать МАЛЕНЬКИЙ масштаб без риска что фон закончится
+        const tileW = CONSTS.WIDTH * 2;  // запас по ширине
+        const tileH = CONSTS.HEIGHT * 2; // запас по высоте
         this.backgroundLayers = {
-            back1: this.add.image(bgCenterX, bgCenterY, 'back_1').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2),
-            back2: this.add.image(bgCenterX, bgCenterY, 'back_2').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2),
-            back3: this.add.image(bgCenterX, bgCenterY, 'back_3').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2),
-            back4: this.add.image(bgCenterX, bgCenterY, 'back_4').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2)
+            back1: this.add.tileSprite(bgCenterX, bgCenterY, tileW, tileH, 'back_1').setOrigin(0.5, 0.5).setScrollFactor(0),
+            back2: this.add.tileSprite(bgCenterX, bgCenterY, tileW, tileH, 'back_2').setOrigin(0.5, 0.5).setScrollFactor(0),
+            back3: this.add.tileSprite(bgCenterX, bgCenterY, tileW, tileH, 'back_3').setOrigin(0.5, 0.5).setScrollFactor(0),
+            back4: this.add.tileSprite(bgCenterX, bgCenterY, tileW, tileH, 'back_4').setOrigin(0.5, 0.5).setScrollFactor(0)
         };
         
-        // Масштабируем фон по принципу cover, без искажения пропорций
         Object.values(this.backgroundLayers).forEach(layer => {
-            fitBackgroundToScreen(layer, CONSTS.WIDTH, CONSTS.HEIGHT, { mode: 'cover', scale: 1.1 });
             layer.setDepth(-10); // Самый задний слой
         });
         
@@ -4455,6 +4451,7 @@ class GameScene extends Phaser.Scene {
     
     // НОВОЕ: Обновляем фон в зависимости от высоты игрока
     this.updateBackgroundTransitions();
+    this.updateParallaxBackground();
     
     // ==================== 1V1 MODE: SEND PLAYER UPDATES ====================
     // Отправляем обновления каждые 100ms
@@ -4709,6 +4706,24 @@ class GameScene extends Phaser.Scene {
         this.backgroundLayers.back4.setAlpha(
             Phaser.Math.Linear(this.backgroundLayers.back4.alpha, alpha4, lerpSpeed)
         );
+    }
+
+    // НОВОЕ: Обновление параллакса и позиционирования тайлового фона
+    updateParallaxBackground() {
+        if (!this.backgroundLayers) return;
+        const cam = this.cameras.main;
+        const centerX = cam.scrollX + cam.width / 2;
+        const centerY = cam.scrollY + cam.height / 2;
+        const layers = [this.backgroundLayers.back1, this.backgroundLayers.back2, this.backgroundLayers.back3, this.backgroundLayers.back4];
+        const baseFactor = 0.08; // медленный параллакс
+        layers.forEach((layer, idx) => {
+            if (!layer) return;
+            const factor = baseFactor + idx * 0.02; // немного быстрее для верхних слоев
+            layer.x = centerX;
+            layer.y = centerY;
+            layer.tilePositionX = cam.scrollX * factor;
+            layer.tilePositionY = cam.scrollY * factor;
+        });
     }
 
     checkMovement() {
@@ -5010,7 +5025,8 @@ class GameScene extends Phaser.Scene {
         // Обновляем фон под новый размер с идеальными пропорциями
         if (this.backgroundLayers) {
             Object.values(this.backgroundLayers).forEach(layer => {
-                fitBackgroundToScreen(layer, width, height, { mode: 'cover', scale: 1.1 });
+                layer.setSize(width * 2, height * 2);
+                layer.setPosition(width / 2, height / 2);
             });
         }
         
