@@ -2782,8 +2782,8 @@ class GameScene extends Phaser.Scene {
             back4: this.add.image(bgCenterX, bgCenterY, 'back_4').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2)
         };
         
-        // ФИКС: Фон покрывает весь экран без черных областей
-        // Используем режим "cover" - фон заполняет весь экран (cover, а не contain)
+        // ФИКС: Показываем фон в меньшем масштабе чтобы видеть детали
+        // Фон 1080x1290, экран ~640x800 - поэтому делаем фон меньше
         Object.values(this.backgroundLayers).forEach(layer => {
             const textureWidth = layer.texture.width;  // 1080
             const textureHeight = layer.texture.height; // 1290
@@ -2792,10 +2792,9 @@ class GameScene extends Phaser.Scene {
             const scaleX = CONSTS.WIDTH / textureWidth;   // например 640/1080 = 0.59
             const scaleY = CONSTS.HEIGHT / textureHeight;  // например 800/1290 = 0.62
             
-            // ВАЖНО: Берем БОЛЬШИЙ масштаб (cover) чтобы фон покрывал весь экран
-            // При этом часть фона может обрезаться, но зато не будет черных полос
-            const baseScale = Math.max(scaleX, scaleY); // Math.max вместо Math.min!
-            const scale = baseScale * 1.0; // Масштаб 1.0 - полное покрытие без черноты
+            // Берем меньший масштаб (contain) и уменьшаем/увеличиваем для оптимального вида
+            const baseScale = Math.min(scaleX, scaleY);
+            const scale = baseScale * 0.6; // 0.8 - показываем чуть больше чем экран
             
             layer.setScale(scale);
             layer.setDepth(-10); // Самый задний слой
