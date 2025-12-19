@@ -2773,19 +2773,31 @@ class GameScene extends Phaser.Scene {
         const bgCenterX = CONSTS.WIDTH / 2;
         const bgCenterY = CONSTS.HEIGHT / 2;
         
-        // scrollFactor 0.3 - фон двигается медленно (30% от скорости камеры)
+        // scrollFactor 0.2 - фон двигается ОЧЕНЬ медленно (20% от скорости камеры)
+        // Это позволяет использовать МАЛЕНЬКИЙ масштаб без риска что фон закончится
         this.backgroundLayers = {
-            back1: this.add.image(bgCenterX, bgCenterY, 'back_1').setOrigin(0.5, 0.5).setScrollFactor(0.3, 0.3),
-            back2: this.add.image(bgCenterX, bgCenterY, 'back_2').setOrigin(0.5, 0.5).setScrollFactor(0.3, 0.3),
-            back3: this.add.image(bgCenterX, bgCenterY, 'back_3').setOrigin(0.5, 0.5).setScrollFactor(0.3, 0.3),
-            back4: this.add.image(bgCenterX, bgCenterY, 'back_4').setOrigin(0.5, 0.5).setScrollFactor(0.3, 0.3)
+            back1: this.add.image(bgCenterX, bgCenterY, 'back_1').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2),
+            back2: this.add.image(bgCenterX, bgCenterY, 'back_2').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2),
+            back3: this.add.image(bgCenterX, bgCenterY, 'back_3').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2),
+            back4: this.add.image(bgCenterX, bgCenterY, 'back_4').setOrigin(0.5, 0.5).setScrollFactor(0.2, 0.2)
         };
         
-        // КАК БЫЛО ИЗНАЧАЛЬНО: просто растягиваем фон на весь экран!
-        // setDisplaySize работает идеально - фон нормального размера
+        // ФИКС: Показываем фон в меньшем масштабе чтобы видеть детали
+        // Фон 1080x1290, экран ~640x800 - поэтому делаем фон меньше
         Object.values(this.backgroundLayers).forEach(layer => {
-            layer.setDisplaySize(CONSTS.WIDTH, CONSTS.HEIGHT * 2); // x2 по высоте для запаса
-            layer.setDepth(-10);
+            const textureWidth = layer.texture.width;  // 1080
+            const textureHeight = layer.texture.height; // 1290
+            
+            // Рассчитываем какой масштаб нужен чтобы покрыть экран
+            const scaleX = CONSTS.WIDTH / textureWidth;   // например 640/1080 = 0.59
+            const scaleY = CONSTS.HEIGHT / textureHeight;  // например 800/1290 = 0.62
+            
+            // Берем меньший масштаб (contain) и уменьшаем/увеличиваем для оптимального вида
+            const baseScale = Math.min(scaleX, scaleY);
+            const scale = baseScale * 0.6; // 0.8 - показываем чуть больше чем экран
+            
+            layer.setScale(scale);
+            layer.setDepth(-10); // Самый задний слой
         });
         
         // Изначально показываем только первый слой (низ)
@@ -4983,11 +4995,23 @@ class GameScene extends Phaser.Scene {
         const camera = this.cameras.main;
         camera.setSize(width, height);
         
-        // Обновляем фон под новый размер - КАК БЫЛО ИЗНАЧАЛЬНО
+        // Обновляем фон под новый размер с идеальными пропорциями
         if (this.backgroundLayers) {
             Object.values(this.backgroundLayers).forEach(layer => {
                 layer.setPosition(width / 2, height / 2);
-                layer.setDisplaySize(width, height * 2); // Просто растягиваем
+                
+                const textureWidth = layer.texture.width;  // 1080
+                const textureHeight = layer.texture.height; // 1290
+                
+                // Рассчитываем какой масштаб нужен чтобы покрыть экран
+                const scaleX = width / textureWidth;
+                const scaleY = height / textureHeight;
+                
+                // Берем меньший масштаб (contain) и уменьшаем/увеличиваем для оптимального вида
+                const baseScale = Math.min(scaleX, scaleY);
+                const scale = baseScale * 0.8; // 0.8 - показываем чуть больше чем экран
+                
+                layer.setScale(scale);
             });
         }
         
