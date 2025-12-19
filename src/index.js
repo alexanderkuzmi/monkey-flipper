@@ -4626,18 +4626,6 @@ class GameScene extends Phaser.Scene {
     updateBackgroundTransitions() {
         if (!this.backgroundLayers || !this.player) return;
         
-        // НОВОЕ: Добавляем плавное движение фона вниз для живого эффекта
-        this.bgAnimOffset += 0.5; // Скорость движения
-        if (this.bgAnimOffset > CONSTS.HEIGHT) {
-            this.bgAnimOffset = 0; // Сброс для зацикливания
-        }
-        
-        // Применяем смещение к Y позиции фона с синусоидальным эффектом для плавности
-        const bgCenterY = CONSTS.HEIGHT / 2 + Math.sin(this.bgAnimOffset * 0.01) * 20;
-        Object.values(this.backgroundLayers).forEach(layer => {
-            layer.y = bgCenterY;
-        });
-        
         // Определяем высоту игрока (чем выше прыгнул - тем больше высота)
         // playerStartY устанавливается при создании игрока
         const playerHeight = Math.max(0, this.playerStartY - this.player.y);
