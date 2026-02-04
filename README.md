@@ -134,7 +134,7 @@ MIT
 
 ## 👨‍💻 Автор
 
-Artur Sitikov - [@YOUR_TELEGRAM]
+
 
 ---
 
