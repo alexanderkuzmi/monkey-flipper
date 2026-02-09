@@ -4,11 +4,13 @@ import {
   useViewModel,
   useViewModelInstance,
   useViewModelInstanceNumber,
+  Layout,
+  Fit,
 } from '@rive-app/react-canvas'
 import { cn } from './lib/utils'
 import './App.css'
 
-const tabs = ['Game', 'Profile', 'Top', 'Shop'] as const
+const tabs = ['Profile', 'Game', 'Top', 'Shop'] as const
 type Tab = (typeof tabs)[number]
 
 const artboardMap: Record<Tab, string> = {
@@ -18,11 +20,19 @@ const artboardMap: Record<Tab, string> = {
   Shop: 'Shop',
 }
 
+const iconMap: Record<Tab, { active: string; inactive: string }> = {
+  Profile: { active: '/icons/profile-active.png', inactive: '/icons/profile.png' },
+  Game: { active: '/icons/game-active.png', inactive: '/icons/game.png' },
+  Top: { active: '/icons/top-active.png', inactive: '/icons/top.png' },
+  Shop: { active: '/icons/shop-active.png', inactive: '/icons/shop.png' },
+}
+
 function RiveScreen({ artboard }: { artboard: string }) {
   const { rive, RiveComponent } = useRive({
     src: '/monkey_new.riv',
     artboard,
     stateMachines: 'State Machine 1',
+    layout: new Layout({ fit: Fit.Cover }),
     autoplay: true,
     autoBind: false,
   })
@@ -50,7 +60,7 @@ function App() {
 
   return (
     <div className="flex h-full w-full items-center justify-center">
-      <div className="relative flex h-full w-full max-w-[430px] max-h-[932px] flex-col overflow-hidden bg-[#1a1a2e] font-sans text-white desktop:rounded-[20px] desktop:border-2 desktop:border-[#333]">
+      <div className="relative flex h-full w-full max-w-[430px] max-h-[932px] flex-col overflow-hidden bg-black font-sans text-white desktop:rounded-[20px] desktop:border-2 desktop:border-[#333]">
         <div className="relative flex flex-1 overflow-hidden">
           <RiveScreen key={activeTab} artboard={artboardMap[activeTab]} />
         </div>
@@ -63,13 +73,19 @@ function App() {
             <button
               key={tab}
               className={cn(
-                "flex-1 cursor-pointer border-none bg-transparent text-center font-fredoka text-[12px] leading-[100%] tracking-[0]",
+                "flex-1 flex flex-col items-center gap-[10px] cursor-pointer border-none bg-transparent text-center font-fredoka text-[12px] leading-[100%] tracking-[0] outline-none [&:focus]:outline-none [-webkit-tap-highlight-color:transparent]",
                 activeTab === tab
                   ? 'bg-gradient-to-b from-[#F9BF2F] to-[#DE8504] bg-clip-text text-transparent'
                   : 'text-[#FEF9F1]/47',
               )}
               onClick={() => setActiveTab(tab)}
             >
+              <div className="flex h-[28px] items-end justify-center">
+                <img
+                  src={activeTab === tab ? iconMap[tab].active : iconMap[tab].inactive}
+                  alt={tab}
+                />
+              </div>
               {tab}
             </button>
           ))}
