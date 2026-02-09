@@ -2,6 +2,10 @@
 
 @custom-variant desktop (@media (min-width: 431px) and (min-height: 933px));
 
+@theme {
+  --font-fredoka: "Fredoka One", cursive;
+}
+
 @layer base {
   html, body, #root {
     @apply h-full bg-[#111];
