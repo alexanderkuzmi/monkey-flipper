@@ -21,3 +21,8 @@ package-lock.json
 # Logs
 *.log
 logs/
+
+# New frontend build output
+new/dist/
+new/*.d.ts
+new/*.d.ts.map

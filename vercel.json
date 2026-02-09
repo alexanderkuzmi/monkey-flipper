@@ -1,6 +1,7 @@
 {
+  "version": 2,
   "framework": null,
-  "buildCommand": "",
-  "installCommand": "",
-  "outputDirectory": "."
+  "buildCommand": "cd new && npm install && npm run build",
+  "outputDirectory": "new/dist",
+  "installCommand": "echo 'skip'"
 }
