@@ -166,8 +166,14 @@
         (function() {
             const overlay = document.getElementById('intro-video-overlay');
             const video = document.getElementById('intro-video');
+            if (isLocal) {
+                overlay.classList.add('hidden');
+                video.removeAttribute('src');
+                return;
+            }
+
             let videoStarted = false;
-            
+
             console.log('🎬 Intro video инициализация');
             console.log('📍 Video src:', video.querySelector('source')?.src);
             

@@ -63,7 +63,7 @@ app.use(express.static(__dirname));
 // PostgreSQL connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: process.env.STAGE === 'local' ? false : { rejectUnauthorized: false }
 });
 
 // ==================== SECURITY MIDDLEWARE ====================

@@ -32,15 +32,17 @@ const TON_CONFIG = {
 };
 
 // ==================== SERVER CONFIGURATION ====================
+const isLocal = window.location.hostname === 'localhost';
+
 // Socket.IO сервер (Render) - для 1v1 матчмейкинга
-const SOCKET_SERVER_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000'  // Для локальной разработки
+const SOCKET_SERVER_URL = isLocal
+    ? 'http://localhost:3000'
     : 'https://monkey-flipper-1v1.onrender.com';
 
 // API сервер (Render) - для сохранения счетов и лидерборда
-const API_SERVER_URL = window.location.hostname === 'localhost'
-    ? 'http://localhost:3001'  // Для локальной разработки
-    : 'https://monkey-flipper-djm1.onrender.com';  // API на Render с PostgreSQL
+const API_SERVER_URL = isLocal
+    ? 'http://localhost:3001'
+    : 'https://monkey-flipper-djm1.onrender.com';
 
 // Старая переменная для обратной совместимости (используется в Socket.IO коде)
 const SERVER_URL = SOCKET_SERVER_URL;  
