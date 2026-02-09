@@ -10,7 +10,7 @@ import {
 import { cn } from './lib/utils'
 import './App.css'
 
-const tabs = ['Profile', 'Game', 'Top', 'Shop'] as const
+const tabs = ['Game', 'Profile', 'Top', 'Shop'] as const
 type Tab = (typeof tabs)[number]
 
 const artboardMap: Record<Tab, string> = {
@@ -66,7 +66,7 @@ function App() {
         </div>
 
         <nav
-          className="flex border-t border-[#4C5352] bg-gradient-to-b from-[#1A1C1D] to-[#141516] pt-[18px] px-[36px] pb-[54px]"
+          className="flex border-t border-[#4C5352] bg-gradient-to-b from-[#1A1C1D] to-[#141516] pt-[18px] px-[36px] pb-[36px]"
           style={{ boxShadow: 'inset 0 4px 4px 0 rgba(37, 39, 40, 0.52)' }}
         >
           {tabs.map((tab) => (
@@ -84,6 +84,7 @@ function App() {
                 <img
                   src={activeTab === tab ? iconMap[tab].active : iconMap[tab].inactive}
                   alt={tab}
+                  className="h-[28px] w-auto"
                 />
               </div>
               {tab}
