@@ -1,78 +1,9 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+@import "tailwindcss";
 
-html, body, #root {
-  height: 100%;
-  background: #111;
-}
+@custom-variant desktop (@media (min-width: 431px) and (min-height: 933px));
 
-.mobile-shell {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.screen {
-  width: 100%;
-  height: 100%;
-  max-width: 430px;
-  max-height: 932px;
-  background: #1a1a2e;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  font-family: system-ui, -apple-system, sans-serif;
-  color: #fff;
-}
-
-/* On desktop, add border & round corners when constrained */
-@media (min-width: 431px) and (min-height: 933px) {
-  .screen {
-    border: 2px solid #333;
-    border-radius: 20px;
+@layer base {
+  html, body, #root {
+    @apply h-full bg-[#111];
   }
-}
-
-.page-content {
-  flex: 1;
-  display: flex;
-  position: relative;
-  overflow: hidden;
-}
-
-.rive-canvas {
-  width: 100%;
-  height: 100%;
-}
-
-/* Bottom navigation bar */
-.bottom-bar {
-  display: flex;
-  border-top: 1px solid #2a2a4a;
-  background: #16162b;
-  padding: 8px 0;
-  padding-bottom: max(8px, env(safe-area-inset-bottom));
-}
-
-.tab {
-  flex: 1;
-  background: none;
-  border: none;
-  color: #555;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 8px 0;
-  cursor: pointer;
-  font-family: inherit;
-  transition: color 0.15s;
-}
-
-.tab.active {
-  color: #fff;
 }

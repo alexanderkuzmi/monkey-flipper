@@ -34,24 +34,26 @@ function RiveScreen({ artboard }: { artboard: string }) {
     }
   }, [vmi])
 
-  return <RiveComponent className="rive-canvas" />
+  return <RiveComponent className="h-full w-full" />
 }
 
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('Lobby')
 
   return (
-    <div className="mobile-shell">
-      <div className="screen">
-        <div className="page-content">
+    <div className="flex h-full w-full items-center justify-center">
+      <div className="relative flex h-full w-full max-w-[430px] max-h-[932px] flex-col overflow-hidden bg-[#1a1a2e] font-sans text-white desktop:rounded-[20px] desktop:border-2 desktop:border-[#333]">
+        <div className="relative flex flex-1 overflow-hidden">
           <RiveScreen key={activeTab} artboard={activeTab} />
         </div>
 
-        <nav className="bottom-bar">
+        <nav className="flex border-t border-[#2a2a4a] bg-[#16162b] py-2 pb-[max(8px,env(safe-area-inset-bottom))]">
           {tabs.map((tab) => (
             <button
               key={tab}
-              className={`tab${activeTab === tab ? ' active' : ''}`}
+              className={`flex-1 cursor-pointer border-none bg-transparent py-2 text-[13px] font-medium transition-colors duration-150 ${
+                activeTab === tab ? 'text-white' : 'text-[#555]'
+              }`}
               onClick={() => setActiveTab(tab)}
             >
               {tab}
