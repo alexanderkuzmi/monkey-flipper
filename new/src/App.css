@@ -1,8 +1,80 @@
-.app {
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  background: #111;
+}
+
+.mobile-shell {
+  width: 100%;
+  height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+}
+
+.screen {
+  width: 100%;
+  height: 100%;
+  max-width: 430px;
+  max-height: 932px;
+  background: #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
   font-family: system-ui, -apple-system, sans-serif;
+  color: #fff;
+}
+
+/* On desktop, add border & round corners when constrained */
+@media (min-width: 431px) and (min-height: 933px) {
+  .screen {
+    border: 2px solid #333;
+    border-radius: 20px;
+  }
+}
+
+.page-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.page-content h1 {
+  font-size: 24px;
+  font-weight: 600;
+  opacity: 0.6;
+}
+
+/* Bottom navigation bar */
+.bottom-bar {
+  display: flex;
+  border-top: 1px solid #2a2a4a;
+  background: #16162b;
+  padding: 8px 0;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+
+.tab.active {
+  color: #fff;
 }
