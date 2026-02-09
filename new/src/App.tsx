@@ -5,6 +5,7 @@ import {
   useViewModelInstance,
   useViewModelInstanceNumber,
 } from '@rive-app/react-canvas'
+import { cn } from './lib/utils'
 import './App.css'
 
 const tabs = ['Lobby', 'Profile', 'Top', 'Shop'] as const
@@ -51,9 +52,10 @@ function App() {
           {tabs.map((tab) => (
             <button
               key={tab}
-              className={`flex-1 cursor-pointer border-none bg-transparent py-2 text-[13px] font-medium transition-colors duration-150 ${
-                activeTab === tab ? 'text-white' : 'text-[#555]'
-              }`}
+              className={cn(
+                'flex-1 cursor-pointer border-none bg-transparent py-2 text-[13px] font-medium text-[#555] transition-colors duration-150',
+                activeTab === tab && 'text-white',
+              )}
               onClick={() => setActiveTab(tab)}
             >
               {tab}
