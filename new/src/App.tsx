@@ -11,7 +11,7 @@ import {
 } from '@rive-app/react-canvas'
 import { useSwipeable } from 'react-swipeable'
 import { cn } from './lib/utils'
-import { getTelegramUser, isTelegramEnv } from './lib/telegram'
+import { getTelegramUser } from './lib/telegram'
 import './App.css'
 
 const tabs = ['Game', 'Profile', 'Top', 'Shop'] as const
@@ -108,24 +108,17 @@ function RiveScreen({ artboard }: { artboard: string }) {
   )
 }
 
-function UserInfo() {
+function ProfileUserInfo() {
   const tgUser = getTelegramUser()
-  const inTelegram = isTelegramEnv()
 
   const name = tgUser
     ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ')
     : 'Guest'
-  const username = tgUser?.username
+  const id = tgUser?.id ?? ''
 
   return (
-    <div className="absolute top-2 left-2 z-50 rounded-lg bg-black/60 px-3 py-1.5 text-xs text-white/80 backdrop-blur-sm">
-      <span className="font-semibold text-white">{name}</span>
-      {username && <span className="ml-1 text-white/50">@{username}</span>}
-      {!inTelegram && (
-        <span className="ml-2 rounded bg-white/10 px-1.5 py-0.5 text-[10px] text-white/40">
-          non-TG
-        </span>
-      )}
+    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-50 pb-3 text-center font-fredoka text-[13px] leading-[100%] tracking-[0] text-[#FEF9F1]/35">
+      {name} | ID {id}
     </div>
   )
 }
@@ -136,7 +129,7 @@ function App() {
   return (
     <div className="flex h-full w-full items-center justify-center">
       <div className="relative flex h-full w-full max-w-[430px] max-h-[932px] flex-col overflow-hidden bg-black font-sans text-white desktop:rounded-[20px] desktop:border-2 desktop:border-[#333]">
-        <UserInfo />
+        {activeTab === 'Profile' && <ProfileUserInfo />}
         <div className="relative flex flex-1 overflow-hidden">
           <RiveScreen key={activeTab} artboard={artboardMap[activeTab]} />
         </div>
