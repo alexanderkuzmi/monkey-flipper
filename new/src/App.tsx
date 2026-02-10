@@ -6,6 +6,7 @@ import {
   useViewModelInstanceNumber,
   Layout,
   Fit,
+  Alignment,
 } from '@rive-app/react-canvas'
 import { cn } from './lib/utils'
 import './App.css'
@@ -19,6 +20,22 @@ const artboardMap: Record<Tab, string> = {
   Top: 'Top',
   Shop: 'Shop',
 }
+
+const FAKE_TOP_DATA = [
+  { name: 'CryptoKing', score: '152 400' },
+  { name: 'MonkeyMaster', score: '148 200' },
+  { name: 'FlipLord', score: '135 700' },
+  { name: 'DiamondApe', score: '129 300' },
+  { name: 'BananaWhale', score: '118 900' },
+  { name: 'TokenHero', score: '105 600' },
+  { name: 'ChainGuru', score: '98 400' },
+  { name: 'MoonRider', score: '87 200' },
+  { name: 'StarPlayer', score: '76 500' },
+  { name: 'GoldRush', score: '65 800' },
+  { name: 'SilverFox', score: '54 300' },
+  { name: 'BronzeApe', score: '43 100' },
+  { name: 'RookieFlip', score: '31 900' },
+]
 
 const iconMap: Record<Tab, { active: string; inactive: string }> = {
   Profile: { active: '/icons/profile-active.png', inactive: '/icons/profile.png' },
@@ -40,7 +57,7 @@ function RiveScreen({ artboard }: { artboard: string }) {
     src: '/monkey_new.riv',
     artboard,
     stateMachines: 'State Machine 1',
-    layout: new Layout({ fit: Fit.Cover }),
+    layout: new Layout({ fit: Fit.Cover, alignment: Alignment.TopCenter }),
     autoplay: true,
     autoBind: false,
   })
@@ -53,10 +70,18 @@ function RiveScreen({ artboard }: { artboard: string }) {
   const { setValue: setGame } = useViewModelInstanceNumber('gameCoins', vmi)
 
   useEffect(() => {
-    if (vmi) {
-      setTon(3.52)
-      setStars(1240)
-      setGame(8900)
+    if (!vmi) return
+    setTon(3.52)
+    setStars(1240)
+    setGame(8900)
+
+    if (artboard === 'Top') {
+      FAKE_TOP_DATA.forEach((entry, i) => {
+        const nameProp = vmi.string(`topName${i + 1}`)
+        if (nameProp) nameProp.value = entry.name
+        const scoreProp = vmi.string(`topScore${i + 1}`)
+        if (scoreProp) scoreProp.value = entry.score
+      })
     }
   }, [vmi])
 
