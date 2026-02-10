@@ -12,6 +12,7 @@ export function initTelegram(): void {
   const wa = getWebApp()
   if (!wa) return
   wa.expand()
+  wa.disableVerticalSwipes()
   wa.requestFullscreen()
 }
 
