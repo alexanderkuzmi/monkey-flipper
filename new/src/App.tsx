@@ -71,8 +71,8 @@ function RiveScreen({ artboard }: { artboard: string }) {
   const rightTrigger = useStateMachineInput(rive, 'State Machine 1', 'Right')
 
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => leftTrigger?.fire(),
-    onSwipedRight: () => rightTrigger?.fire(),
+    onSwipedLeft: () => rightTrigger?.fire(),
+    onSwipedRight: () => leftTrigger?.fire(),
     trackMouse: true,
     preventScrollOnSwipe: true,
   })
