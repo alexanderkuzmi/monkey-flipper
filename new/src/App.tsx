@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   useRive,
+  useStateMachineInput,
   useViewModel,
   useViewModelInstance,
   useViewModelInstanceNumber,
@@ -8,6 +9,7 @@ import {
   Fit,
   Alignment,
 } from '@rive-app/react-canvas'
+import { useSwipeable } from 'react-swipeable'
 import { cn } from './lib/utils'
 import './App.css'
 
@@ -65,6 +67,16 @@ function RiveScreen({ artboard }: { artboard: string }) {
   const viewModel = useViewModel(rive, { name: 'ViewModel1' })
   const vmi = useViewModelInstance(viewModel, { rive })
 
+  const leftTrigger = useStateMachineInput(rive, 'State Machine 1', 'Left ')
+  const rightTrigger = useStateMachineInput(rive, 'State Machine 1', 'Right')
+
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => leftTrigger?.fire(),
+    onSwipedRight: () => rightTrigger?.fire(),
+    trackMouse: true,
+    preventScrollOnSwipe: true,
+  })
+
   const { setValue: setTon } = useViewModelInstanceNumber('tonCoins', vmi)
   const { setValue: setStars } = useViewModelInstanceNumber('starsCoins', vmi)
   const { setValue: setGame } = useViewModelInstanceNumber('gameCoins', vmi)
@@ -88,7 +100,9 @@ function RiveScreen({ artboard }: { artboard: string }) {
   return (
     <>
       {!rive && <Loader />}
-      <RiveComponent className="h-full w-full" />
+      <div {...swipeHandlers} className="h-full w-full">
+        <RiveComponent className="h-full w-full" />
+      </div>
     </>
   )
 }
