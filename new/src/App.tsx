@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   useRive,
   useStateMachineInput,
@@ -55,7 +55,15 @@ function Loader() {
   )
 }
 
-function RiveScreen({ artboard }: { artboard: string }) {
+function RiveScreen({
+  artboard,
+  onPlay,
+  onModeChange,
+}: {
+  artboard: string
+  onPlay?: () => void
+  onModeChange?: (delta: number) => void
+}) {
   const { rive, RiveComponent } = useRive({
     src: '/monkey_new.riv',
     artboard,
@@ -72,8 +80,14 @@ function RiveScreen({ artboard }: { artboard: string }) {
   const rightTrigger = useStateMachineInput(rive, 'State Machine 1', 'Right')
 
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => rightTrigger?.fire(),
-    onSwipedRight: () => leftTrigger?.fire(),
+    onSwipedLeft: () => {
+      rightTrigger?.fire()
+      onModeChange?.(1)
+    },
+    onSwipedRight: () => {
+      leftTrigger?.fire()
+      onModeChange?.(-1)
+    },
     trackMouse: true,
     preventScrollOnSwipe: true,
   })
@@ -101,8 +115,15 @@ function RiveScreen({ artboard }: { artboard: string }) {
   return (
     <>
       {!rive && <Loader />}
-      <div {...swipeHandlers} className="h-full w-full">
+      <div {...swipeHandlers} className="relative h-full w-full">
         <RiveComponent className="h-full w-full" />
+        {onPlay && (
+          <button
+            onClick={onPlay}
+            className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[65%] h-[10%] cursor-pointer z-10"
+            aria-label="Play"
+          />
+        )}
       </div>
     </>
   )
@@ -123,43 +144,62 @@ function ProfileUserInfo() {
   )
 }
 
+const GAME_MODES = ['solo', 'tournament', '1v1'] as const
+
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('Game')
+  const modeIndexRef = useRef(0)
+
+  const handleModeChange = useCallback((delta: number) => {
+    modeIndexRef.current = ((modeIndexRef.current + delta) % 3 + 3) % 3
+  }, [])
+
+  const handlePlay = useCallback(() => {
+    const mode = GAME_MODES[modeIndexRef.current]
+    const params = new URLSearchParams(window.location.search)
+    params.set('mode', mode)
+    window.location.href = `/game.html?${params.toString()}`
+  }, [])
 
   return (
     <div className="flex h-full w-full items-center justify-center">
       <div className="relative flex h-full w-full max-w-[430px] max-h-[932px] flex-col overflow-hidden bg-black font-sans text-white desktop:rounded-[20px] desktop:border-2 desktop:border-[#333]">
         <div className="relative flex flex-1 overflow-hidden">
-          <RiveScreen key={activeTab} artboard={artboardMap[activeTab]} />
+          <RiveScreen
+            key={activeTab}
+            artboard={artboardMap[activeTab]}
+            onPlay={activeTab === 'Game' ? handlePlay : undefined}
+            onModeChange={activeTab === 'Game' ? handleModeChange : undefined}
+          />
           {activeTab === 'Profile' && <ProfileUserInfo />}
         </div>
 
         <nav
-          className="flex border-t border-[#4C5352] bg-gradient-to-b from-[#1A1C1D] to-[#141516] pt-[18px] px-[36px] pb-[36px]"
-          style={{ boxShadow: 'inset 0 4px 4px 0 rgba(37, 39, 40, 0.52)' }}
-        >
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              className={cn(
-                "flex-1 flex flex-col items-center gap-[10px] cursor-pointer border-none bg-transparent text-center font-fredoka text-[12px] leading-[100%] tracking-[0] outline-none [&:focus]:outline-none [-webkit-tap-highlight-color:transparent]",
-                activeTab === tab
-                  ? 'bg-gradient-to-b from-[#F9BF2F] to-[#DE8504] bg-clip-text text-transparent'
-                  : 'text-[#FEF9F1]/47',
-              )}
-              onClick={() => setActiveTab(tab)}
-            >
-              <div className="flex h-[28px] items-end justify-center">
-                <img
-                  src={activeTab === tab ? iconMap[tab].active : iconMap[tab].inactive}
-                  alt={tab}
-                  className="h-[28px] w-auto"
-                />
-              </div>
-              {tab}
-            </button>
-          ))}
-        </nav>
+            className="flex border-t border-[#4C5352] bg-gradient-to-b from-[#1A1C1D] to-[#141516] pt-[18px] px-[36px] pb-[36px]"
+            style={{ boxShadow: 'inset 0 4px 4px 0 rgba(37, 39, 40, 0.52)' }}
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                className={cn(
+                  "flex-1 flex flex-col items-center gap-[10px] cursor-pointer border-none bg-transparent text-center font-fredoka text-[12px] leading-[100%] tracking-[0] outline-none [&:focus]:outline-none [-webkit-tap-highlight-color:transparent]",
+                  activeTab === tab
+                    ? 'bg-gradient-to-b from-[#F9BF2F] to-[#DE8504] bg-clip-text text-transparent'
+                    : 'text-[#FEF9F1]/47',
+                )}
+                onClick={() => setActiveTab(tab)}
+              >
+                <div className="flex h-[28px] items-end justify-center">
+                  <img
+                    src={activeTab === tab ? iconMap[tab].active : iconMap[tab].inactive}
+                    alt={tab}
+                    className="h-[28px] w-auto"
+                  />
+                </div>
+                {tab}
+              </button>
+            ))}
+          </nav>
       </div>
     </div>
   )
