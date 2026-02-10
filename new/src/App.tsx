@@ -129,9 +129,9 @@ function App() {
   return (
     <div className="flex h-full w-full items-center justify-center">
       <div className="relative flex h-full w-full max-w-[430px] max-h-[932px] flex-col overflow-hidden bg-black font-sans text-white desktop:rounded-[20px] desktop:border-2 desktop:border-[#333]">
-        {activeTab === 'Profile' && <ProfileUserInfo />}
         <div className="relative flex flex-1 overflow-hidden">
           <RiveScreen key={activeTab} artboard={artboardMap[activeTab]} />
+          {activeTab === 'Profile' && <ProfileUserInfo />}
         </div>
 
         <nav
