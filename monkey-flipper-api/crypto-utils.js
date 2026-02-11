@@ -1,7 +1,7 @@
 // ==================== CRYPTO UTILITIES ====================
 // AES-256-GCM шифрование для безопасного хранения адресов кошельков
 
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 // ВАЖНО: В продакшне ключ должен храниться в .env файле!
 // Генерируем 32-байтовый ключ (256 бит для AES-256)
@@ -147,7 +147,7 @@ function hashData(data) {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
 
-module.exports = {
+export default {
     encrypt,
     decrypt,
     signData,

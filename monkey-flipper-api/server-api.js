@@ -1,15 +1,22 @@
-const express = require('express');
-const { Pool } = require('pg');
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit');
-const crypto = require('crypto');
-const fs = require('fs');
-const cryptoUtils = require('./crypto-utils'); // Утилиты шифрования
-const starsAPI = require('./stars-api'); // STARS API интеграция (игровая валюта)
-const telegramStars = require('./telegram-stars-real'); // Telegram Stars (XTR) - реальные платежи
-const routesNew = require('./routes-new.ts');
-require('dotenv').config();
+import express from 'express';
+import pg from 'pg';
+const { Pool } = pg;
+import cors from 'cors';
+import jwt from 'jsonwebtoken';
+import rateLimit from 'express-rate-limit';
+import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import 'dotenv/config';
+import cryptoUtils from './crypto-utils.js';
+import starsAPI from './stars-api.js';
+import telegramStars from './telegram-stars-real.js';
+import routesNew from './routes-new.ts';
+import { createDb } from './db.ts';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -68,7 +75,8 @@ const pool = new Pool({
   ssl: process.env.STAGE === 'local' ? false : { rejectUnauthorized: false }
 });
 
-app.use('/api/new', routesNew(pool));
+const db = createDb(pool);
+app.use('/api/new', routesNew(db));
 
 // ==================== SECURITY MIDDLEWARE ====================
 
@@ -1760,7 +1768,6 @@ app.get('/api/transactions/:userId', async (req, res) => {
 // ==================== SHOP ENDPOINTS ====================
 
 // Загружаем каталог товаров
-const path = require('path');
 const SHOP_ITEMS = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'shop-items.json'), 'utf-8')
 );

@@ -5,8 +5,16 @@
  * Используем WEBHOOK вместо POLLING - более надёжно для production
  */
 
-require('dotenv').config(); // Загружаем переменные окружения
-const TelegramBot = require('node-telegram-bot-api');
+import 'dotenv/config';
+import TelegramBot from 'node-telegram-bot-api';
+import pg from 'pg';
+import fs from 'fs';
+import crypto from 'crypto';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Инициализация бота с токеном
 const botToken = process.env.BOT_TOKEN || '';
@@ -182,9 +190,7 @@ function setupPaymentHandler(server) {
  * Выдать товар пользователю после оплаты Stars
  */
 async function addItemToInventory(userId, payload, amount, chargeId = null) {
-    const { Pool } = require('pg');
-    const fs = require('fs');
-    const crypto = require('crypto');
+    const { Pool } = pg;
     
     console.log(`🔍 addItemToInventory called: userId=${userId}, payload=${payload}, amount=${amount}, chargeId=${chargeId}`);
     console.log(`🔍 DATABASE_URL exists: ${!!process.env.DATABASE_URL}`);
@@ -247,7 +253,6 @@ async function addItemToInventory(userId, payload, amount, chargeId = null) {
         }
         
         // Загружаем товары (используем абсолютный путь!)
-        const path = require('path');
         const shopItemsPath = path.join(__dirname, 'shop-items.json');
         console.log(`📂 Loading shop items from: ${shopItemsPath}`);
         const shopItems = JSON.parse(fs.readFileSync(shopItemsPath, 'utf8'));
@@ -503,7 +508,7 @@ async function showIntroAnimation(userId, animationPath, gameUrl) {
     }
 }
 
-module.exports = {
+export default {
     createStarsInvoice,
     setupPaymentHandler,
     addItemToInventory,

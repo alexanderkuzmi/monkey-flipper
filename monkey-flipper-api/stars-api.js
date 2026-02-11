@@ -5,7 +5,7 @@
  * ⚠️ TODO: Заменить на реальный API когда будет доступен
  */
 
-const axios = require('axios');
+import axios from 'axios';
 
 // Конфигурация STARS API
 const STARS_API_CONFIG = {
@@ -171,7 +171,7 @@ function validateAddress(address) {
     return starAddressRegex.test(address);
 }
 
-module.exports = {
+export default {
     sendTokens,
     getBalance,
     getTransactionStatus,

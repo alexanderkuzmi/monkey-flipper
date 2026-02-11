@@ -1,29 +1,35 @@
 import type { Request, Response } from 'express';
-import type { Pool } from 'pg';
+import express from 'express';
+import { eq } from 'drizzle-orm';
+import { wallets } from './schema.ts';
+import type { Db } from './db.ts';
 
-const express = require('express');
 const router = express.Router();
 
-module.exports = function (pool: Pool) {
+export default function (db: Db) {
   router.get('/balances/:userId', async (req: Request, res: Response) => {
     const { userId } = req.params;
 
     try {
-      const wallet = await pool.query(
-        'SELECT monkey_coin_balance, stars_balance, ton_balance FROM wallets WHERE user_id = $1',
-        [userId]
-      );
+      const rows = await db
+        .select({
+          monkeyCoinBalance: wallets.monkeyCoinBalance,
+          starsBalance: wallets.starsBalance,
+          tonBalance: wallets.tonBalance,
+        })
+        .from(wallets)
+        .where(eq(wallets.userId, userId));
 
-      if (wallet.rows.length === 0) {
+      if (rows.length === 0) {
         return res.json({ success: true, gameCoins: 0, starsCoins: 0, tonCoins: 0 });
       }
 
-      const row = wallet.rows[0];
+      const row = rows[0];
       return res.json({
         success: true,
-        gameCoins: parseFloat(row.monkey_coin_balance) || 0,
-        starsCoins: parseFloat(row.stars_balance) || 0,
-        tonCoins: parseFloat(row.ton_balance) || 0,
+        gameCoins: Number(row.monkeyCoinBalance) || 0,
+        starsCoins: parseFloat(row.starsBalance ?? '0') || 0,
+        tonCoins: parseFloat(row.tonBalance ?? '0') || 0,
       });
     } catch (err: unknown) {
       console.error('Get balances error', err);
@@ -36,4 +42,4 @@ module.exports = function (pool: Pool) {
   });
 
   return router;
-};
+}
