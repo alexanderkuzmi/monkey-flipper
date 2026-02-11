@@ -1457,7 +1457,8 @@ class TournamentScene extends Phaser.Scene {
             fontFamily: 'Arial'
         }).setOrigin(0.5);
 
-        backBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+        // backBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+        backBtn.on('pointerdown', () => { window.location.href = '/'; });
         backBtn.on('pointerover', () => backBtn.setFillStyle(0x4A6278));
         backBtn.on('pointerout', () => backBtn.setFillStyle(0x34495E));
     }
@@ -1524,6 +1525,8 @@ class MatchmakingScene extends Phaser.Scene {
         
         cancelZone.on('pointerdown', () => {
             this.cancelMatchmaking();
+            // this.scene.start('MenuScene'); // was via cancelMatchmaking
+            window.location.href = '/';
         });
         
         // Подключаемся к серверу
@@ -4066,9 +4069,9 @@ class GameScene extends Phaser.Scene {
         }).setOrigin(0.5).setScrollFactor(0).setDepth(152);
         
         menuZone.on('pointerdown', () => {
-            console.log('🔙🔙🔙 МЕНЮ НАЖАТО! Выход в меню...');
-            this.scene.stop('GameScene');
-            this.scene.start('MenuScene');
+            // this.scene.stop('GameScene');
+            // this.scene.start('MenuScene');
+            window.location.href = '/';
         });
 
         // НОВОЕ: Отправляем счет на сервер АСИНХРОННО (не блокирует UI)
@@ -7419,7 +7422,8 @@ class PvPMenuScene extends Phaser.Scene {
         
         backBtn.on('pointerover', () => backBtn.setFill('#FFD700'));
         backBtn.on('pointerout', () => backBtn.setFill('#FFFFFF'));
-        backBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+        // backBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+        backBtn.on('pointerdown', () => { window.location.href = '/'; });
     }
     
     createPvPButton(y, title, description, color, callback) {
@@ -7519,7 +7523,8 @@ class ProfileScene extends Phaser.Scene {
         
         backBtn.on('pointerover', () => backBtn.setFill('#FFD700'));
         backBtn.on('pointerout', () => backBtn.setFill('#FFFFFF'));
-        backBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+        // backBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+        backBtn.on('pointerdown', () => { window.location.href = '/'; });
     }
     
     createProfileButton(y, text, color, callback) {
