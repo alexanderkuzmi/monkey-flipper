@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   useRive,
   useStateMachineInput,
   useViewModel,
   useViewModelInstance,
   useViewModelInstanceNumber,
+  useViewModelInstanceTrigger,
   Layout,
   Fit,
   Alignment,
@@ -57,12 +58,10 @@ function Loader() {
 
 function RiveScreen({
   artboard,
-  onPlay,
-  onModeChange,
+  onGameEvent,
 }: {
   artboard: string
-  onPlay?: () => void
-  onModeChange?: (delta: number) => void
+  onGameEvent?: (mode: string) => void
 }) {
   const { rive, RiveComponent } = useRive({
     src: '/monkey_new.riv',
@@ -80,16 +79,20 @@ function RiveScreen({
   const rightTrigger = useStateMachineInput(rive, 'State Machine 1', 'Right')
 
   const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => {
-      rightTrigger?.fire()
-      onModeChange?.(1)
-    },
-    onSwipedRight: () => {
-      leftTrigger?.fire()
-      onModeChange?.(-1)
-    },
+    onSwipedLeft: () => { rightTrigger?.fire() },
+    onSwipedRight: () => { leftTrigger?.fire() },
     trackMouse: true,
     preventScrollOnSwipe: true,
+  })
+
+  useViewModelInstanceTrigger('singleGame', vmi, {
+    onTrigger: () => onGameEvent?.('solo'),
+  })
+  useViewModelInstanceTrigger('duelGame', vmi, {
+    onTrigger: () => onGameEvent?.('1v1'),
+  })
+  useViewModelInstanceTrigger('tournamentGame', vmi, {
+    onTrigger: () => onGameEvent?.('tournament'),
   })
 
   const { setValue: setTon } = useViewModelInstanceNumber('tonCoins', vmi)
@@ -117,13 +120,6 @@ function RiveScreen({
       {!rive && <Loader />}
       <div {...swipeHandlers} className="relative h-full w-full">
         <RiveComponent className="h-full w-full" />
-        {onPlay && (
-          <button
-            onClick={onPlay}
-            className="absolute bottom-[8%] left-1/2 -translate-x-1/2 w-[65%] h-[10%] cursor-pointer z-10"
-            aria-label="Play"
-          />
-        )}
       </div>
     </>
   )
@@ -144,18 +140,10 @@ function ProfileUserInfo() {
   )
 }
 
-const GAME_MODES = ['solo', 'tournament', '1v1'] as const
-
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('Game')
-  const modeIndexRef = useRef(0)
 
-  const handleModeChange = useCallback((delta: number) => {
-    modeIndexRef.current = ((modeIndexRef.current + delta) % 3 + 3) % 3
-  }, [])
-
-  const handlePlay = useCallback(() => {
-    const mode = GAME_MODES[modeIndexRef.current]
+  const handleGameEvent = useCallback((mode: string) => {
     const params = new URLSearchParams(window.location.search)
     params.set('mode', mode)
     window.location.href = `/game.html?${params.toString()}`
@@ -168,8 +156,7 @@ function App() {
           <RiveScreen
             key={activeTab}
             artboard={artboardMap[activeTab]}
-            onPlay={activeTab === 'Game' ? handlePlay : undefined}
-            onModeChange={activeTab === 'Game' ? handleModeChange : undefined}
+            onGameEvent={activeTab === 'Game' ? handleGameEvent : undefined}
           />
           {activeTab === 'Profile' && <ProfileUserInfo />}
         </div>
