@@ -82,6 +82,25 @@ Express + PostgreSQL. Handles everything persistent. Auth via JWT (24h) + Telegr
 
 **Security:** Rate limiting (5 req/min on score submission), Telegram initData HMAC-SHA256 validation, JWT auth, CORS whitelist (Telegram origins + Vercel domain).
 
+### Security Issues (TODO)
+
+**Almost all endpoints are unauthenticated.** The `validateTelegram` middleware exists but is never applied globally — and even when present, it skips requests with no `X-Telegram-Init-Data` header ("backward compatibility"). Only a few endpoints enforce auth:
+- `validateJWT`: `/api/stars/balance`
+- `validateAdmin`: `/api/admin/stars-transactions`, `/api/admin/refund-*`, `/api/admin/purchases-stats`, `/api/admin/stars-purchases`
+- `validateShopAuth`: `/api/shop/create-stars-invoice`, `/api/shop/create-ton-transaction`, `/api/shop/confirm-ton-payment`
+
+**Everything else is wide open** — no auth required, exploitable with plain `curl`:
+
+| Endpoint | Risk |
+|----------|------|
+| `POST /api/save-score` | Client sends score directly, server trusts it. Only rate-limited (5/min). Anyone can submit fake scores for any userId and farm coins (`score / 150` per request) |
+| `POST /api/wallet/add-coins` | Add coins to any user's wallet directly |
+| `POST /api/admin/fix-stuck-duel` | Admin action with hardcoded key (`monkey_admin_2024`) instead of proper auth |
+| `POST /api/admin/login` | No rate limiting on login attempts |
+| All GET endpoints with `:userId` | Any user's data (wallet, stats, duels, achievements, referrals) is readable by anyone |
+
+**`POST /api/game-events`** exists as a safer alternative (server recalculates score from events) but the game client still calls `save-score` instead.
+
 ## Key Files
 
 | File | Description |
