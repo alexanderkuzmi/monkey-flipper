@@ -94,6 +94,7 @@ Express + PostgreSQL. Handles everything persistent. Auth via JWT (24h) + Telegr
 | `new/public/src/index.js` | **Main game** — 7625 lines, 14 Phaser scenes (legacy, being partially replaced by Rive) |
 | `server.js` | Socket.IO server for 1v1 matchmaking (port 3000) |
 | `monkey-flipper-api/server-api.js` | API server (port 3001) |
+| `monkey-flipper-api/routes-new.js` | New API routes (mounted at `/api/new/*`, no auth) |
 | `src/index.js` | Original game (reference only, not served) |
 | `new/public/monkey_new.riv` | Rive animation file (Lobby, Profile, Top, Shop artboards) |
 
@@ -126,7 +127,7 @@ Auto-mode from URL: `?mode=solo|1v1|tournament` skips MenuScene.
 ## Dev Setup
 
 ```bash
-npm run dev:all   # Starts all 3: Vite (5173) + Socket.IO (3000) + legacy HTTP (8000)
+npm run dev:all   # Starts all 4: Vite (5173) + Socket.IO (3000) + API (3001) + legacy HTTP (8000)
 ```
 
 Or individually:
