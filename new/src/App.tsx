@@ -13,6 +13,7 @@ import {
 import { useSwipeable } from 'react-swipeable'
 import { cn } from './lib/utils'
 import { getTelegramUser } from './lib/telegram'
+import { fetchBalances } from './lib/api'
 import './App.css'
 
 const tabs = ['Game', 'Profile', 'Top', 'Shop'] as const
@@ -101,9 +102,16 @@ function RiveScreen({
 
   useEffect(() => {
     if (!vmi) return
-    setTon(3.52)
-    setStars(1240)
-    setGame(8900)
+
+    const userId = getTelegramUser()?.id
+    if (userId) {
+      fetchBalances(userId).then(b => {
+        if (!b) return
+        setTon(b.tonCoins)
+        setStars(b.starsCoins)
+        setGame(b.gameCoins)
+      })
+    }
 
     if (artboard === 'Top') {
       FAKE_TOP_DATA.forEach((entry, i) => {
