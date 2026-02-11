@@ -82,6 +82,28 @@ Express + PostgreSQL. Handles everything persistent. Auth via JWT (24h) + Telegr
 
 **Security:** Rate limiting (5 req/min on score submission), Telegram initData HMAC-SHA256 validation, JWT auth, CORS whitelist (Telegram origins + Vercel domain).
 
+### Admin Dashboard
+
+Static HTML page at `/admin-stats.html`, served via `express.static(__dirname)` (line 62 of `server-api.js`). Live at `https://monkey-flipper-djm1.onrender.com/admin-stats.html`.
+
+**Login:** `POST /api/admin/login` with `{ password }`. Password is `process.env.ADMIN_PASSWORD` with fallback `admin123`. Returns a 24h JWT. The login page itself displays the default password in plain text.
+
+**Features:**
+- Stars balance & transaction history with per-transaction refund buttons
+- Stars purchases from DB with refund capability
+- TON transactions list
+- Purchase stats (total purchases, unique users, TON received)
+- Recent purchases across all currencies
+
+**Admin endpoints (JWT-protected via `validateAdmin`):**
+- `GET /api/admin/stars-transactions` — Telegram Stars transactions with refund status
+- `POST /api/admin/refund-by-payload` — refund Stars by transaction ID
+- `POST /api/admin/refund-stars` — refund Stars by purchase ID
+- `GET /api/admin/purchases-stats` — total purchases, unique users, TON received, recent purchases
+- `GET /api/admin/stars-purchases` — all Stars purchases with refund eligibility
+
+**`express.static(__dirname)` risk:** Serves every file in `monkey-flipper-api/` publicly — including `server-api.js` source code, `shop-items.json`, and any other files in that directory. `.env` is typically not committed but anything else in the folder is accessible.
+
 ### Security Issues (TODO)
 
 **Almost all endpoints are unauthenticated.** The `validateTelegram` middleware exists but is never applied globally — and even when present, it skips requests with no `X-Telegram-Init-Data` header ("backward compatibility"). Only a few endpoints enforce auth:
@@ -96,7 +118,8 @@ Express + PostgreSQL. Handles everything persistent. Auth via JWT (24h) + Telegr
 | `POST /api/save-score` | Client sends score directly, server trusts it. Only rate-limited (5/min). Anyone can submit fake scores for any userId and farm coins (`score / 150` per request) |
 | `POST /api/wallet/add-coins` | Add coins to any user's wallet directly |
 | `POST /api/admin/fix-stuck-duel` | Admin action with hardcoded key (`monkey_admin_2024`) instead of proper auth |
-| `POST /api/admin/login` | No rate limiting on login attempts |
+| `POST /api/admin/login` | No rate limiting on login attempts, default password `admin123` shown on the login page |
+| `express.static(__dirname)` | Serves all files in `monkey-flipper-api/` directory publicly (source code, configs) |
 | All GET endpoints with `:userId` | Any user's data (wallet, stats, duels, achievements, referrals) is readable by anyone |
 
 **`POST /api/game-events`** exists as a safer alternative (server recalculates score from events) but the game client still calls `save-score` instead.
