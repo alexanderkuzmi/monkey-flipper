@@ -1,8 +1,11 @@
+import type { Request, Response } from 'express';
+import type { Pool } from 'pg';
+
 const express = require('express');
 const router = express.Router();
 
-module.exports = function (pool) {
-  router.get('/balances/:userId', async (req, res) => {
+module.exports = function (pool: Pool) {
+  router.get('/balances/:userId', async (req: Request, res: Response) => {
     const { userId } = req.params;
 
     try {
@@ -22,13 +25,13 @@ module.exports = function (pool) {
         starsCoins: parseFloat(row.stars_balance) || 0,
         tonCoins: parseFloat(row.ton_balance) || 0,
       });
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Get balances error', err);
       return res.status(500).json({ success: false, error: 'DB error' });
     }
   });
 
-  router.get('/health', (req, res) => {
+  router.get('/health', (_req: Request, res: Response) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 

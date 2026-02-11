@@ -7,7 +7,7 @@
     "start": "node server.js",
     "frontend": "python3 -m http.server 8000",
     "dev": "nodemon server.js",
-    "dev:all": "concurrently \"npm run dev\" \"npm run frontend\" \"npm run dev --prefix new\" \"cd monkey-flipper-api && node server-api.js\""
+    "dev:all": "concurrently \"npm run dev\" \"npm run frontend\" \"npm run dev --prefix new\" \"npm start --prefix monkey-flipper-api\""
   },
   "dependencies": {
     "cors": "^2.8.5",

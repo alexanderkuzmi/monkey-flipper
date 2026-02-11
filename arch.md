@@ -35,14 +35,16 @@ Telegram Mini App multiplayer game. A monkey jumps on balloons (platforms), tryi
 
 All services deploy from the **same repo** (`arthurianno/monkey-flipper`, `main` branch).
 
-| Service | Platform | Trigger | Build | Start |
-|---------|----------|---------|-------|-------|
-| Frontend | Vercel | Auto on push to `main` | — (static files) | — |
-| API Server | Render | **Manual** (dashboard button) | `cd monkey-flipper-api && npm install` | `cd monkey-flipper-api && node server-api.js` |
-| 1v1 Socket Server | Render | **Manual** (dashboard button) | `npm install` (root) | `node server.js` |
-| PostgreSQL | Render | Always running (managed) | — | — |
+| Service | Platform | Trigger | Root Dir | Build | Start |
+|---------|----------|---------|----------|-------|-------|
+| Frontend | Vercel | Auto on push to `main` | — | — (static files) | — |
+| API Server | Render | **Manual** (dashboard button) | `monkey-flipper-api/` | `npm install` | `npm start` |
+| 1v1 Socket Server | Render | **Manual** (dashboard button) | _(root)_ | `npm install` | `node server.js` |
+| PostgreSQL | Render | Always running (managed) | — | — | — |
 
-No CI/CD pipeline, no GitHub Actions. Vercel auto-deploys the frontend on every push. Both Render backends require manually clicking "Manual Deploy" in the Render dashboard.
+No CI/CD pipeline, no GitHub Actions. Vercel auto-deploys the frontend on every push. Both Render backends require manually clicking "Manual Deploy" in the Render dashboard. The API server has Auto-Deploy set to "On Commit" in Render UI but it does **not** trigger automatically — deploys are manual.
+
+**Health check:** `GET /api/new/health` returns `{ status: "ok", timestamp: "..." }`
 
 **Environment variables** — stored in Render dashboard, not in repo (`.env` is gitignored):
 
@@ -54,7 +56,7 @@ No CI/CD pipeline, no GitHub Actions. Vercel auto-deploys the frontend on every 
 
 > **Note:** `.env.example` lists additional vars (`ENCRYPTION_KEY`, RSA keys, `FRONTEND_URL`) that are **not set** in production Render.
 
-> **Note:** `render.yaml` in the repo is likely outdated and not actively used — the service name, start command, and plan don't match what's actually configured in Render. Both services were set up manually through the Render UI.
+> **Note:** `render.yaml` in the repo is outdated and not used — both services were configured manually through the Render UI. The table above reflects the actual Render dashboard settings (verified Feb 2026).
 
 ---
 

@@ -8,7 +8,7 @@ const fs = require('fs');
 const cryptoUtils = require('./crypto-utils'); // Утилиты шифрования
 const starsAPI = require('./stars-api'); // STARS API интеграция (игровая валюта)
 const telegramStars = require('./telegram-stars-real'); // Telegram Stars (XTR) - реальные платежи
-const routesNew = require('./routes-new');
+const routesNew = require('./routes-new.ts');
 require('dotenv').config();
 
 const app = express();

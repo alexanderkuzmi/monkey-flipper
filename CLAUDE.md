@@ -184,8 +184,8 @@ Local PvP testing: open two tabs with `?test=1` to get unique anonymous IDs.
 ## Deployment
 
 - **Frontend**: Vercel (auto-deploy from `main`, builds `new/dist`)
-- **Socket server**: Render (`monkey-flipper-1v1.onrender.com`)
-- **API server**: Render (`monkey-flipper-djm1.onrender.com`)
+- **API server**: Render (`monkey-flipper-djm1.onrender.com`) — manual deploy. Health: `GET /api/new/health`
+- **Socket server**: Render (`monkey-flipper-1v1.onrender.com`) — manual deploy. Health: `GET /api/health`
 
 ## Conventions
 
