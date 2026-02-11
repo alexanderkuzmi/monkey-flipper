@@ -2658,6 +2658,50 @@ class GameScene extends Phaser.Scene {
     this.touchZones = null;
 }
 
+    // ==================== RIVE EXPERIMENT ====================
+    initRiveMonkey() {
+        if (!window.rive) {
+            console.warn('⚠️ Rive runtime not loaded, skipping Rive monkey');
+            return;
+        }
+
+        const size = 256;
+        this.riveCanvas = document.createElement('canvas');
+        this.riveCanvas.width = size;
+        this.riveCanvas.height = size;
+        this.riveCanvas.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:256px;height:256px;pointer-events:none;';
+        document.body.appendChild(this.riveCanvas);
+
+        if (this.textures.exists('riveMonkey')) this.textures.remove('riveMonkey');
+        this.riveTexture = this.textures.createCanvas('riveMonkey', size, size);
+
+        this.riveInstance = new rive.Rive({
+            src: './monkey_new.riv',
+            canvas: this.riveCanvas,
+            artboard: 'Monkey',
+            autoplay: true,
+            onLoad: () => {
+                this.riveInstance.resizeDrawingSurfaceToCanvas();
+                this.riveReady = true;
+                console.log('✅ Rive monkey ready, canvas:', this.riveCanvas.width, 'x', this.riveCanvas.height);
+            },
+            onLoadError: (e) => {
+                console.error('❌ Rive monkey load error', e);
+            }
+        });
+    }
+
+    updateRiveTexture() {
+        if (!this.riveReady || !this.riveTexture || !this.player) return;
+        if (!this.riveCanvas.width || !this.riveCanvas.height) return;
+
+        const ctx = this.riveTexture.context;
+        ctx.clearRect(0, 0, 256, 256);
+        ctx.drawImage(this.riveCanvas, 0, 0);
+        this.riveTexture.refresh();
+    }
+    // ==================== END RIVE EXPERIMENT ====================
+
     preload() {
         // НОВОЕ: Загружаем 4 части фона для динамических переходов
         this.load.image('back_1', 'assets/back_1.png'); // Низ (начало игры)
@@ -2692,6 +2736,10 @@ class GameScene extends Phaser.Scene {
     }
 
     create(data) {
+        // ==================== RIVE EXPERIMENT ====================
+        this.riveReady = false;
+        this.initRiveMonkey();
+
         // ==================== LOAD EQUIPPED ITEMS ====================
         const userData = getTelegramUserId();
         
@@ -2976,6 +3024,22 @@ class GameScene extends Phaser.Scene {
         // ФИКС: Сразу idle-анимация (игрок стоит на земле)
         this.player.anims.stop();
         this.player.setTexture('playerSprite');
+
+        // RIVE EXPERIMENT: hijack setTexture + anims to always show Rive monkey
+        const scene = this;
+        const origSetTexture = this.player.setTexture.bind(this.player);
+        this.player.setTexture = function(key, frame) {
+            if (scene.riveReady) return origSetTexture('riveMonkey');
+            return origSetTexture(key, frame);
+        };
+        const origAnimPlay = this.player.anims.play.bind(this.player.anims);
+        this.player.anims.play = function(key, ignoreIfPlaying) {
+            if (scene.riveReady) {
+                scene.player.anims.stop();
+                return origSetTexture('riveMonkey');
+            }
+            return origAnimPlay(key, ignoreIfPlaying);
+        };
 
         // НОВОЕ: Создаем анимацию ходьбы
         this.anims.create({
@@ -4451,6 +4515,12 @@ class GameScene extends Phaser.Scene {
     }
 
     update() {
+    // RIVE EXPERIMENT: copy Rive canvas → Phaser texture + force texture every frame
+    this.updateRiveTexture();
+    if (this.riveReady && this.player) {
+        this.player.setTexture('riveMonkey');
+    }
+
     // ФИКС: Не выполняем update если сцена не активна (критично для Telegram!)
     if (!this.scene.isActive('GameScene')) {
         return;
