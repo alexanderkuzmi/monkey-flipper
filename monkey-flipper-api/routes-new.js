@@ -28,5 +28,9 @@ module.exports = function (pool) {
     }
   });
 
+  router.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
   return router;
 };
