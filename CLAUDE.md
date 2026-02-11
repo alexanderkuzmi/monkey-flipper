@@ -11,7 +11,9 @@ Old files kept for backward compatibility:
 - `new/public/src/index.js` — copy of old game, still used by `game.html`
 - Various old Phaser scenes (ProfileScene, LeaderboardScene, etc.) still exist in the game file but are being superseded by Rive artboards
 
-**API server TypeScript migration** is in progress. The API server (`monkey-flipper-api/`) uses Node's `--experimental-strip-types` (requires Node ≥ 22.6.0) to run `.ts` files directly — no build step. `server-api.js` stays JS and `require()`s `.ts` files with explicit extension (`require('./routes-new.ts')`). Rules for `.ts` files: type-only annotations only — no `enum`, `namespace`, or parameter properties (those need `--experimental-transform-types`). Started with `routes-new.ts`.
+**API server is ESM** (`"type": "module"` in `package.json`). All `.js` files use `import`/`export`, no `require()`. The API server uses Node's `--experimental-strip-types` (requires Node ≥ 22.6.0) to run `.ts` files directly — no build step. `server-api.js` stays JS and imports `.ts` files with explicit extension (`import routesNew from './routes-new.ts'`). Rules for `.ts` files: type-only annotations only — no `enum`, `namespace`, or parameter properties (those need `--experimental-transform-types`).
+
+**Drizzle ORM** is integrated for type-safe queries. Schema pulled from existing DB into `schema.ts`. New routes in `routes-new.ts` use Drizzle; legacy routes in `server-api.js` still use raw `pool.query()`. Migrations tracked in `drizzle/` folder — baseline migration (0000) is a no-op since tables already existed.
 
 ## Architecture
 
@@ -137,8 +139,12 @@ Static HTML page at `/admin-stats.html`, served via `express.static(__dirname)` 
 | `new/public/game.html` | Phaser game container (loads CDN scripts + `src/index.js`) |
 | `new/public/src/index.js` | **Main game** — 7625 lines, 14 Phaser scenes (legacy, being partially replaced by Rive) |
 | `server.js` | Socket.IO server for 1v1 matchmaking (port 3000) |
-| `monkey-flipper-api/server-api.js` | API server (port 3001) |
-| `monkey-flipper-api/routes-new.js` | New API routes (mounted at `/api/new/*`, no auth) |
+| `monkey-flipper-api/server-api.js` | API server (port 3001), ESM |
+| `monkey-flipper-api/routes-new.ts` | New API routes using Drizzle (mounted at `/api/new/*`, no auth) |
+| `monkey-flipper-api/schema.ts` | Drizzle schema (pulled from DB, 14 tables) |
+| `monkey-flipper-api/db.ts` | Drizzle db factory (`createDb(pool)`) |
+| `monkey-flipper-api/drizzle.config.ts` | Drizzle Kit config |
+| `monkey-flipper-api/drizzle/` | Migration SQL files + journal |
 | `src/index.js` | Original game (reference only, not served) |
 | `new/public/monkey_new.riv` | Rive animation file (Lobby, Profile, Top, Shop artboards) |
 
@@ -178,7 +184,7 @@ Or individually:
 ```bash
 cd new && npm run dev          # Vite dev server (5173)
 npm run dev                    # Socket.IO server (3000)
-cd monkey-flipper-api && node server-api.js  # API server (3001)
+cd monkey-flipper-api && npm start  # API server (3001)
 ```
 
 Local PvP testing: open two tabs with `?test=1` to get unique anonymous IDs.
@@ -188,6 +194,10 @@ Local PvP testing: open two tabs with `?test=1` to get unique anonymous IDs.
 - **Frontend**: Vercel (auto-deploy from `main`, builds `new/dist`)
 - **API server**: Render (`monkey-flipper-djm1.onrender.com`) — manual deploy. Health: `GET /api/new/health`
 - **Socket server**: Render (`monkey-flipper-1v1.onrender.com`) — manual deploy. Health: `GET /api/health`
+
+## Drizzle ORM
+
+**Schema changes:** Edit `schema.ts`, then `npx drizzle-kit generate` to create a migration in `drizzle/`. Apply with `npx drizzle-kit migrate`. Never edit migration files after they've been applied.
 
 ## Conventions
 
