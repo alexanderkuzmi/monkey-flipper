@@ -11,6 +11,8 @@ Old files kept for backward compatibility:
 - `new/public/src/index.js` — copy of old game, still used by `game.html`
 - Various old Phaser scenes (ProfileScene, LeaderboardScene, etc.) still exist in the game file but are being superseded by Rive artboards
 
+**API server TypeScript migration** is in progress. The API server (`monkey-flipper-api/`) uses Node's `--experimental-strip-types` (requires Node ≥ 22.6.0) to run `.ts` files directly — no build step. `server-api.js` stays JS and `require()`s `.ts` files with explicit extension (`require('./routes-new.ts')`). Rules for `.ts` files: type-only annotations only — no `enum`, `namespace`, or parameter properties (those need `--experimental-transform-types`). Started with `routes-new.ts`.
+
 ## Architecture
 
 ```
