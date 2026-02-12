@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import type { RiveFile } from '@rive-app/canvas'
 import {
   useRive,
   useStateMachineInput,
@@ -20,14 +21,16 @@ function formatScore(score: number): string {
 }
 
 export function RiveScreen({
+  riveFile,
   artboard,
   onGameEvent,
 }: {
+  riveFile: RiveFile
   artboard: string
   onGameEvent?: (mode: string) => void
 }) {
   const { rive, RiveComponent } = useRive({
-    src: '/monkey_new.riv',
+    riveFile,
     artboard,
     stateMachines: 'State Machine 1',
     layout: new Layout({ fit: Fit.Cover, alignment: Alignment.TopCenter }),
