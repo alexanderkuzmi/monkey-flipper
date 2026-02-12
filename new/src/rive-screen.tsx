@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import type { RiveFile } from '@rive-app/canvas'
 import {
   useRive,
@@ -14,6 +14,7 @@ import {
 import { useSwipeable } from 'react-swipeable'
 import { useBalances, useLeaderboard } from './lib/api'
 import { debugLog } from './debug-overlay'
+import { cn } from './lib/utils'
 import { Loader } from './loader'
 
 function formatScore(score: number): string {
@@ -74,7 +75,11 @@ export function RiveScreen({
   const { data: balances } = useBalances()
   const { data: leaderboard } = useLeaderboard(13)
 
-  useEffect(() => {
+  const [dataReady, setDataReady] = useState(false)
+
+  useEffect(() => { setDataReady(false) }, [artboard])
+
+  useLayoutEffect(() => {
     if (!vmi) return
 
     if (balances) {
@@ -83,7 +88,7 @@ export function RiveScreen({
       setGame(balances.gameCoins)
     }
 
-    if (artboard === 'Top') {
+    // if (artboard === 'Top') {
       const entries = leaderboard ?? []
       for (let i = 0; i < 13; i++) {
         const entry = entries[i]
@@ -92,17 +97,16 @@ export function RiveScreen({
         const scoreProp = vmi.string(`topScore${i + 1}`)
         if (scoreProp) scoreProp.value = entry ? formatScore(entry.score) : ''
       }
-    }
-  }, [vmi, balances, leaderboard])
+    // }
 
-  useEffect(() => {
     setHeightCoins(30)
-  }, [setHeightCoins])
+    setDataReady(true)
+  }, [vmi, balances, leaderboard])
 
   return (
     <>
-      {!rive && <Loader />}
-      <div {...swipeHandlers} className="relative h-full w-full">
+      {!dataReady && <Loader />}
+      <div {...swipeHandlers} className={cn('relative h-full w-full', !dataReady && 'invisible')}>
         <RiveComponent className="h-full w-full" />
       </div>
     </>
