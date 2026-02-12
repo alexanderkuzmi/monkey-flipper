@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { RiveFile } from '@rive-app/canvas'
 import {
   useRive,
@@ -79,7 +79,7 @@ export function RiveScreen({
 
   useEffect(() => { setDataReady(false) }, [artboard])
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!vmi) return
 
     if (balances) {
