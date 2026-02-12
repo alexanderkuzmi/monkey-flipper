@@ -133,7 +133,7 @@ function RiveScreen({
   }, [vmi])
 
   useEffect(() => {
-    setHeightCoins(100)
+    setHeightCoins(30)
   }, [setHeightCoins])
 
   return (
