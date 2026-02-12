@@ -21,7 +21,7 @@ strings public/monkey_new.riv | grep -iE '(state|machine|trigger|input|artboard|
 
 ## Current File: `monkey_new.riv`
 
-Extracted 2026-02-10.
+Extracted 2026-02-12.
 
 ### Artboards
 | Name | Used for |
@@ -37,22 +37,31 @@ Extracted 2026-02-10.
 ### Trigger Inputs
 | Name | Note |
 |------|------|
-| `Left ` | **Has trailing space!** |
-| `Right` | |
+| `Left ` | **Has trailing space!** Carousel swipe |
+| `Right` | Carousel swipe |
 | `Trigger 1` | Unknown purpose |
+| `moveMonkey` | Plays monkey animation (use on any action) |
+| `buttonStars` | Fires when Stars wallet button is tapped |
+| `buttonTon` | Fires when TON wallet button is tapped |
 
 ### Number Inputs
-| Name |
-|------|
-| `Number Left` |
-| `Number Right` |
+| Name | Note |
+|------|------|
+| `Number Left` | |
+| `Number Right` | |
 
 ### ViewModel: `ViewModel1`
+
+**Triggers (game mode buttons):**
+- `singleGame` — Solo mode
+- `duelGame` — Duel/1v1 mode
+- `tournamentGame` — Tournament mode
 
 **Numeric properties:**
 - `tonCoins`
 - `starsCoins`
 - `gameCoins`
+- `heightCoins` — 0-100, controls coin stack height animation (Lobby only for now)
 
 **String properties (leaderboard):**
 - `topName1` through `topName13`
@@ -62,9 +71,33 @@ Extracted 2026-02-10.
 | Name | Type (guessed) |
 |------|----------------|
 | `goShop` | Trigger/event |
-| `tournamentGame` | Trigger/event |
 | `Animation lobby` | Animation name |
 | `Full Name` | String property |
+| `goldenGamepad` | Visual element |
+| `Hight Coins` / `Hight Coins Up` / `Hight Coins Down` | Coin height animation states |
+| `Monkey L` / `Monkey R` | Monkey directional elements |
+
+## Troubleshooting: "Input not found"
+
+When a Rive property isn't working, `strings` showing the name in the .riv file only proves it exists — NOT how to access it. There are two completely different access mechanisms:
+
+**State Machine Inputs** → `useStateMachineInput(rive, 'State Machine 1', name)`
+- Triggers: `Left `, `Right`, `ButtonPlay`
+- Numbers: `Number Left`, `Number Right`
+- These are wired directly into the state machine graph
+
+**ViewModel Properties** → `useViewModelInstanceNumber(name, vmi)`, `useViewModelInstanceString(name, vmi)`, etc.
+- Numbers: `tonCoins`, `starsCoins`, `gameCoins`, `heightCoins`
+- Strings: `topName1`–`topName13`, `topScore1`–`topScore13`
+- Triggers: `singleGame`, `duelGame`, `tournamentGame`, `buttonStars`, `buttonTon`
+- These live on `ViewModel1` and require a `viewModelInstance`
+
+**When something doesn't work, check in this order:**
+1. Look at how similar properties are already accessed in the code — follow existing patterns first
+2. Verify the exact name with `strings` (trailing spaces, casing)
+3. Try the other access mechanism (SM input vs ViewModel property)
+4. Use `rive.stateMachineInputs('State Machine 1')` at runtime to list what the SM actually has
+5. Only after exhausting the above — ask the designer
 
 ## Gotchas
 

@@ -6,6 +6,7 @@ import {
   useViewModelInstance,
   useViewModelInstanceNumber,
   useViewModelInstanceTrigger,
+  EventType,
   Layout,
   Fit,
   Alignment,
@@ -14,6 +15,7 @@ import { useSwipeable } from 'react-swipeable'
 import { cn } from './lib/utils'
 import { getTelegramUser } from './lib/telegram'
 import { fetchBalances } from './lib/api'
+import { debugLog, DebugOverlay } from './DebugOverlay'
 import './App.css'
 
 const tabs = ['Game', 'Profile', 'Top', 'Shop'] as const
@@ -78,6 +80,7 @@ function RiveScreen({
 
   const leftTrigger = useStateMachineInput(rive, 'State Machine 1', 'Left ')
   const rightTrigger = useStateMachineInput(rive, 'State Machine 1', 'Right')
+  const { setValue: setHeightCoins } = useViewModelInstanceNumber('heightCoins', vmi)
 
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () => { rightTrigger?.fire() },
@@ -87,13 +90,19 @@ function RiveScreen({
   })
 
   useViewModelInstanceTrigger('singleGame', vmi, {
-    onTrigger: () => onGameEvent?.('solo'),
+    onTrigger: () => { debugLog('VM trigger: singleGame'); onGameEvent?.('solo') },
   })
   useViewModelInstanceTrigger('duelGame', vmi, {
-    onTrigger: () => onGameEvent?.('1v1'),
+    onTrigger: () => { debugLog('VM trigger: duelGame'); onGameEvent?.('1v1') },
   })
   useViewModelInstanceTrigger('tournamentGame', vmi, {
-    onTrigger: () => onGameEvent?.('tournament'),
+    onTrigger: () => { debugLog('VM trigger: tournamentGame'); onGameEvent?.('tournament') },
+  })
+  useViewModelInstanceTrigger('buttonStars', vmi, {
+    onTrigger: () => { debugLog('VM trigger: buttonStars') },
+  })
+  useViewModelInstanceTrigger('buttonTon', vmi, {
+    onTrigger: () => { debugLog('VM trigger: buttonTon') },
   })
 
   const { setValue: setTon } = useViewModelInstanceNumber('tonCoins', vmi)
@@ -122,6 +131,10 @@ function RiveScreen({
       })
     }
   }, [vmi])
+
+  useEffect(() => {
+    setHeightCoins(100)
+  }, [setHeightCoins])
 
   return (
     <>
@@ -159,6 +172,7 @@ function App() {
 
   return (
     <div className="flex h-full w-full items-center justify-center">
+      <DebugOverlay />
       <div className="relative flex h-full w-full max-w-[430px] max-h-[932px] flex-col overflow-hidden bg-black font-sans text-white desktop:rounded-[20px] desktop:border-2 desktop:border-[#333]">
         <div className="relative flex flex-1 overflow-hidden">
           <RiveScreen
