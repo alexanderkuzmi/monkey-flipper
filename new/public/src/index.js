@@ -2675,13 +2675,34 @@ class GameScene extends Phaser.Scene {
         if (this.textures.exists('riveMonkey')) this.textures.remove('riveMonkey');
         this.riveTexture = this.textures.createCanvas('riveMonkey', size, size);
 
+        this.moveMonkeyTrigger = null;
+        this.riveMonkeyEnabled = true; // toggle via debug button
+
         this.riveInstance = new rive.Rive({
             src: './monkey_new.riv',
             canvas: this.riveCanvas,
             artboard: 'Monkey',
+            stateMachines: 'State Machine 1',
             autoplay: true,
             onLoad: () => {
                 this.riveInstance.resizeDrawingSurfaceToCanvas();
+
+                // Get moveMonkey trigger from ViewModel
+                const vm = this.riveInstance.viewModelByIndex(0);
+                if (vm) {
+                    const vmi = vm.defaultInstance();
+                    if (vmi) {
+                        this.riveInstance.bindViewModelInstance(vmi);
+                        const t = vmi.trigger('moveMonkey');
+                        if (t) {
+                            this.moveMonkeyTrigger = t;
+                            console.log('✅ moveMonkey VM trigger found');
+                        } else {
+                            console.warn('⚠️ moveMonkey not found on ViewModel');
+                        }
+                    }
+                }
+
                 this.riveReady = true;
                 console.log('✅ Rive monkey ready, canvas:', this.riveCanvas.width, 'x', this.riveCanvas.height);
             },
@@ -2699,6 +2720,37 @@ class GameScene extends Phaser.Scene {
         ctx.clearRect(0, 0, 256, 256);
         ctx.drawImage(this.riveCanvas, 0, 0);
         this.riveTexture.refresh();
+    }
+    fireMonkeyMove() {
+        if (this.moveMonkeyTrigger && this.riveMonkeyEnabled) {
+            this.moveMonkeyTrigger.trigger();
+        }
+    }
+
+    createRiveDebugButton() {
+        // Toggle button in top-right corner
+        const btn = document.createElement('button');
+        btn.textContent = '🐒 Rive: ON';
+        btn.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;padding:8px 12px;background:#222;color:#0f0;border:2px solid #0f0;border-radius:8px;font-size:14px;cursor:pointer;font-family:monospace;';
+        btn.onclick = () => {
+            this.riveMonkeyEnabled = !this.riveMonkeyEnabled;
+            btn.textContent = this.riveMonkeyEnabled ? '🐒 Rive: ON' : '🐒 Rive: OFF';
+            btn.style.color = this.riveMonkeyEnabled ? '#0f0' : '#f00';
+            btn.style.borderColor = this.riveMonkeyEnabled ? '#0f0' : '#f00';
+        };
+
+        // Fire trigger button
+        const fireBtn = document.createElement('button');
+        fireBtn.textContent = '▶ moveMonkey';
+        fireBtn.style.cssText = 'position:fixed;top:10px;right:130px;z-index:9999;padding:8px 12px;background:#222;color:#ff0;border:2px solid #ff0;border-radius:8px;font-size:14px;cursor:pointer;font-family:monospace;';
+        fireBtn.onclick = () => {
+            this.fireMonkeyMove();
+            console.log('🐒 moveMonkey fired manually');
+        };
+
+        document.body.appendChild(btn);
+        document.body.appendChild(fireBtn);
+        this.riveDebugButtons = [btn, fireBtn];
     }
     // ==================== END RIVE EXPERIMENT ====================
 
@@ -2738,7 +2790,9 @@ class GameScene extends Phaser.Scene {
     create(data) {
         // ==================== RIVE EXPERIMENT ====================
         this.riveReady = false;
+        this.riveMonkeyEnabled = true;
         this.initRiveMonkey();
+        this.createRiveDebugButton();
 
         // ==================== LOAD EQUIPPED ITEMS ====================
         const userData = getTelegramUserId();
@@ -3703,6 +3757,7 @@ class GameScene extends Phaser.Scene {
             this.player.setVelocityY(CONSTS.JUMP_VELOCITY * this.jumpMultiplier); // С учётом буста
             this.player.anims.stop();
             this.player.setTexture('monkey_up'); // ФИКС: Статичная текстура вместо анимации
+            this.fireMonkeyMove(); // RIVE: trigger moveMonkey on jump
         }
     }
 
@@ -3855,6 +3910,7 @@ class GameScene extends Phaser.Scene {
         this.player.setTexture('monkey_up'); // ФИКС: Статичная текстура вместо анимации
         this.isJumping = true; // НОВОЕ: Устанавливаем флаг прыжка
         this.lastBouncePlatform = platformObj; // ФИКС: Запоминаем эту платформу чтобы не прыгать с неё повторно
+        this.fireMonkeyMove(); // RIVE: trigger moveMonkey on bounce
         return; // Выходим, чтобы не обрабатывать другие касания в этом кадре
     }
     // УБРАНО: Логика зацепления за бока шариков (left/right) полностью удалена
