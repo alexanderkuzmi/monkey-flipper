@@ -40,3 +40,28 @@ export function useBalances() {
     staleTime: 30_000,
   })
 }
+
+export interface LeaderboardEntry {
+  user_id: string
+  username: string
+  score: number
+}
+
+async function fetchLeaderboard(limit: number): Promise<LeaderboardEntry[]> {
+  try {
+    const res = await fetch(`${API_SERVER_URL}/api/leaderboard?limit=${limit}`)
+    const data = await res.json()
+    if (!data.success) return []
+    return data.rows ?? []
+  } catch {
+    return []
+  }
+}
+
+export function useLeaderboard(limit = 13) {
+  return useQuery({
+    queryKey: ['leaderboard', limit],
+    queryFn: () => fetchLeaderboard(limit),
+    staleTime: 60_000,
+  })
+}

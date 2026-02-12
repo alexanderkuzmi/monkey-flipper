@@ -11,25 +11,13 @@ import {
   Alignment,
 } from '@rive-app/react-canvas'
 import { useSwipeable } from 'react-swipeable'
-import { useBalances } from './lib/api'
+import { useBalances, useLeaderboard } from './lib/api'
 import { debugLog } from './debug-overlay'
 import { Loader } from './loader'
 
-const FAKE_TOP_DATA = [
-  { name: 'CryptoKing', score: '152 400' },
-  { name: 'MonkeyMaster', score: '148 200' },
-  { name: 'FlipLord', score: '135 700' },
-  { name: 'DiamondApe', score: '129 300' },
-  { name: 'BananaWhale', score: '118 900' },
-  { name: 'TokenHero', score: '105 600' },
-  { name: 'ChainGuru', score: '98 400' },
-  { name: 'MoonRider', score: '87 200' },
-  { name: 'StarPlayer', score: '76 500' },
-  { name: 'GoldRush', score: '65 800' },
-  { name: 'SilverFox', score: '54 300' },
-  { name: 'BronzeApe', score: '43 100' },
-  { name: 'RookieFlip', score: '31 900' },
-]
+function formatScore(score: number): string {
+  return score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+}
 
 export function RiveScreen({
   artboard,
@@ -81,6 +69,7 @@ export function RiveScreen({
   const { setValue: setStars } = useViewModelInstanceNumber('starsCoins', vmi)
   const { setValue: setGame } = useViewModelInstanceNumber('gameCoins', vmi)
   const { data: balances } = useBalances()
+  const { data: leaderboard } = useLeaderboard(13)
 
   useEffect(() => {
     if (!vmi) return
@@ -92,14 +81,16 @@ export function RiveScreen({
     }
 
     if (artboard === 'Top') {
-      FAKE_TOP_DATA.forEach((entry, i) => {
+      const entries = leaderboard ?? []
+      for (let i = 0; i < 13; i++) {
+        const entry = entries[i]
         const nameProp = vmi.string(`topName${i + 1}`)
-        if (nameProp) nameProp.value = entry.name
+        if (nameProp) nameProp.value = entry ? (entry.username || `Player ${entry.user_id}`) : ''
         const scoreProp = vmi.string(`topScore${i + 1}`)
-        if (scoreProp) scoreProp.value = entry.score
-      })
+        if (scoreProp) scoreProp.value = entry ? formatScore(entry.score) : ''
+      }
     }
-  }, [vmi, balances])
+  }, [vmi, balances, leaderboard])
 
   useEffect(() => {
     setHeightCoins(30)
