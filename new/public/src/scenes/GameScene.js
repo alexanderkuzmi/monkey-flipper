@@ -1,15 +1,3 @@
-// URL is the single source of truth for rive toggle (?rive=0 to disable, default ON)
-const riveEnabled = new URLSearchParams(window.location.search).get('rive') !== '0';
-function toggleRive() {
-    const url = new URL(window.location.href);
-    if (riveEnabled) {
-        url.searchParams.set('rive', '0');
-    } else {
-        url.searchParams.delete('rive');
-    }
-    window.location.href = url.toString();
-}
-
 // Класс сцены игры (с возвратом в меню при проигрыше)
 class GameScene extends Phaser.Scene {
     constructor() {
@@ -160,26 +148,35 @@ class GameScene extends Phaser.Scene {
         const riveLabel = riveOn ? 'Rive: ON' : 'Rive: OFF';
         const riveColor = riveOn ? '#00FF00' : '#FF4444';
 
+        const bgLabel = bgSwapEnabled ? 'BG: ON' : 'BG: OFF';
+        const bgColor = bgSwapEnabled ? '#00FF00' : '#FF4444';
+
         const cardX = CONSTS.WIDTH - 110;
         const cardY = 130;
+        const row1Y = cardY - 10;
+        const row2Y = cardY + 10;
 
-        // Background card
+        // Background card (two rows)
         this.debugCard = this.add.rectangle(
-            cardX, cardY, 200, 32, 0x000000, 0.55
+            cardX, cardY, 200, 52, 0x000000, 0.55
         ).setScrollFactor(0).setDepth(200).setOrigin(0.5, 0.5);
         this.debugCard.setStrokeStyle(1, 0x444444);
 
-        // FPS text (left side)
-        this.fpsText = this.add.text(cardX - 90, cardY, 'FPS: --', {
+        // Row 1: FPS + Rive toggle
+        this.fpsText = this.add.text(cardX - 90, row1Y, 'FPS: --', {
             fontSize: '14px', fill: '#AAAAAA', fontFamily: 'monospace'
         }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(201);
 
-        // Rive toggle (right side, interactive)
-        this.riveToggleBtn = this.add.text(cardX + 90, cardY, riveLabel, {
+        this.riveToggleBtn = this.add.text(cardX + 90, row1Y, riveLabel, {
             fontSize: '14px', fill: riveColor, fontFamily: 'monospace'
         }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(201).setInteractive();
-
         this.riveToggleBtn.on('pointerdown', toggleRive);
+
+        // Row 2: BG Swap toggle
+        this.bgSwapToggleBtn = this.add.text(cardX - 90, row2Y, bgLabel, {
+            fontSize: '14px', fill: bgColor, fontFamily: 'monospace'
+        }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(201).setInteractive();
+        this.bgSwapToggleBtn.on('pointerdown', toggleBgSwap);
     }
     // ==================== END RIVE EXPERIMENT ====================
 
@@ -2236,6 +2233,7 @@ class GameScene extends Phaser.Scene {
     // НОВОЕ: Функция плавного перехода между слоями фона
     updateBackgroundTransitions() {
         if (!this.backgroundLayers || !this.player) return;
+        if (!bgSwapEnabled) return;
         
         // Определяем высоту игрока (чем выше прыгнул - тем больше высота)
         // playerStartY устанавливается при создании игрока
