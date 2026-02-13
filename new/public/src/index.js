@@ -2728,29 +2728,7 @@ class GameScene extends Phaser.Scene {
     }
 
     createRiveDebugButton() {
-        // Toggle button in top-right corner
-        const btn = document.createElement('button');
-        btn.textContent = '🐒 Rive: ON';
-        btn.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;padding:8px 12px;background:#222;color:#0f0;border:2px solid #0f0;border-radius:8px;font-size:14px;cursor:pointer;font-family:monospace;';
-        btn.onclick = () => {
-            this.riveMonkeyEnabled = !this.riveMonkeyEnabled;
-            btn.textContent = this.riveMonkeyEnabled ? '🐒 Rive: ON' : '🐒 Rive: OFF';
-            btn.style.color = this.riveMonkeyEnabled ? '#0f0' : '#f00';
-            btn.style.borderColor = this.riveMonkeyEnabled ? '#0f0' : '#f00';
-        };
-
-        // Fire trigger button
-        const fireBtn = document.createElement('button');
-        fireBtn.textContent = '▶ moveMonkey';
-        fireBtn.style.cssText = 'position:fixed;top:10px;right:130px;z-index:9999;padding:8px 12px;background:#222;color:#ff0;border:2px solid #ff0;border-radius:8px;font-size:14px;cursor:pointer;font-family:monospace;';
-        fireBtn.onclick = () => {
-            this.fireMonkeyMove();
-            console.log('🐒 moveMonkey fired manually');
-        };
-
-        document.body.appendChild(btn);
-        document.body.appendChild(fireBtn);
-        this.riveDebugButtons = [btn, fireBtn];
+        // No debug UI — offsets tuned directly in code
     }
     // ==================== END RIVE EXPERIMENT ====================
 
@@ -2792,7 +2770,6 @@ class GameScene extends Phaser.Scene {
         this.riveReady = false;
         this.riveMonkeyEnabled = true;
         this.initRiveMonkey();
-        this.createRiveDebugButton();
 
         // ==================== LOAD EQUIPPED ITEMS ====================
         const userData = getTelegramUserId();
@@ -3018,9 +2995,9 @@ class GameScene extends Phaser.Scene {
         const bodyWidth = displayW * 0.75;  // 75% от ширины
         const bodyHeight = displayH * 0.75; // 75% от высоты
 
-// Центрируем хитбокс относительно спрайта
-        const offsetX = (displayW - bodyWidth)* 1.5;
-        const offsetY = (displayH - bodyHeight)* 2;
+// Центрируем хитбокс относительно спрайта (+ extra offset for Rive monkey alignment)
+        const offsetX = (displayW - bodyWidth) * 1.5 + 45;
+        const offsetY = (displayH - bodyHeight) * 2 + 80;
 
         this.player.body.setSize(bodyWidth, bodyHeight);
         this.player.body.setOffset(offsetX, offsetY);
