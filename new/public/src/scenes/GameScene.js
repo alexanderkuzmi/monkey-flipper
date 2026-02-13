@@ -457,7 +457,14 @@ class GameScene extends Phaser.Scene {
         this.player.body.setSize(bodyWidth, bodyHeight);
         this.player.body.setOffset(offsetX, offsetY);
 
-        
+        // FIX: Reposition player so physics body bottom sits exactly on ground top
+        // The body bottom relative to sprite center = offsetY + bodyHeight - displayH/2
+        // We need body bottom = ground top = ground.y - groundHalfHeight
+        const bodyBottomFromCenter = offsetY + bodyHeight - displayH / 2;
+        const groundTop = ground.y - groundHalfHeight;
+        this.player.y = groundTop - bodyBottomFromCenter - 1; // -1px gap to ensure clean touching.down
+        this.playerStartY = this.player.y;
+
         this.player.setOrigin(0.5, 0.5);
         this.player.setDepth(10);
         this.player.setCollideWorldBounds(true);
@@ -2150,7 +2157,6 @@ class GameScene extends Phaser.Scene {
     this.checkJump();
     this.updateMovingPlatforms(); // НОВОЕ: Обновляем движущиеся платформы
     this.refactorPlatforms();
-    this.checkGameOver();
     
     // REMOVED: Старая система ракет (rockets) удалена как небезопасная
     // Бусты теперь работают через серверную систему equipped_items
@@ -2464,13 +2470,6 @@ class GameScene extends Phaser.Scene {
             this.minPlatformY = Math.min(this.minPlatformY, platform.y);
             console.log('♻️ Новый тип платформы:', platform.platformType);
         });
-    }
-
-    checkGameOver() {
-        // Fallback удалён: game over теперь только на земле с impact в handlePlayerPlatformCollision.
-        // Убрали проверку на player.body.y > gameOverDistance, чтобы избежать ранней смерти в воздухе.
-        // Если нужно fallback для "бесконечного падения" (редко), добавь фиксированную границу ниже земли,
-        // например: if (this.player.y > this.groundBottom + 100) { ... }
     }
 
     showConfirmExit() {
