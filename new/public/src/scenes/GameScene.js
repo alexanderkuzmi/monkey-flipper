@@ -161,7 +161,7 @@ class GameScene extends Phaser.Scene {
         const riveColor = riveOn ? '#00FF00' : '#FF4444';
 
         const cardX = CONSTS.WIDTH - 110;
-        const cardY = 80;
+        const cardY = 130;
 
         // Background card
         this.debugCard = this.add.rectangle(
