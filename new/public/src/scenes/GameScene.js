@@ -95,8 +95,8 @@ class GameScene extends Phaser.Scene {
         document.body.appendChild(this.riveCanvas);
 
         // Slightly larger than PNG (124x120) to compensate for Rive artboard padding
-        this.riveTexW = 154;
-        this.riveTexH = 150;
+        this.riveTexW = 144;
+        this.riveTexH = 140;
         if (this.textures.exists('riveMonkey')) this.textures.remove('riveMonkey');
         this.riveTexture = this.textures.createCanvas('riveMonkey', this.riveTexW, this.riveTexH);
 
@@ -155,24 +155,27 @@ class GameScene extends Phaser.Scene {
     }
 
     createDebugInfoCard() {
-        // Single info card at bottom: FPS + Rive toggle
+        // Info card at top-right with big top padding
         const riveOn = riveEnabled;
         const riveLabel = riveOn ? 'Rive: ON' : 'Rive: OFF';
         const riveColor = riveOn ? '#00FF00' : '#FF4444';
 
+        const cardX = CONSTS.WIDTH - 110;
+        const cardY = 80;
+
         // Background card
         this.debugCard = this.add.rectangle(
-            CONSTS.WIDTH / 2, CONSTS.HEIGHT - 24, 200, 32, 0x000000, 0.55
+            cardX, cardY, 200, 32, 0x000000, 0.55
         ).setScrollFactor(0).setDepth(200).setOrigin(0.5, 0.5);
         this.debugCard.setStrokeStyle(1, 0x444444);
 
         // FPS text (left side)
-        this.fpsText = this.add.text(CONSTS.WIDTH / 2 - 90, CONSTS.HEIGHT - 24, 'FPS: --', {
+        this.fpsText = this.add.text(cardX - 90, cardY, 'FPS: --', {
             fontSize: '14px', fill: '#AAAAAA', fontFamily: 'monospace'
         }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(201);
 
         // Rive toggle (right side, interactive)
-        this.riveToggleBtn = this.add.text(CONSTS.WIDTH / 2 + 90, CONSTS.HEIGHT - 24, riveLabel, {
+        this.riveToggleBtn = this.add.text(cardX + 90, cardY, riveLabel, {
             fontSize: '14px', fill: riveColor, fontFamily: 'monospace'
         }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(201).setInteractive();
 
