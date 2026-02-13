@@ -515,6 +515,11 @@ class GameScene extends Phaser.Scene {
         this.player.anims.stop();
         this.player.setTexture('playerSprite');
 
+        // RIVE: hide player until Rive texture is ready (prevents PNG flash)
+        if (riveEnabled) {
+            this.player.setAlpha(0);
+        }
+
         // RIVE EXPERIMENT: hijack setTexture + anims to always show Rive monkey (only when rive enabled)
         if (riveEnabled) {
             const scene = this;
@@ -2022,6 +2027,8 @@ class GameScene extends Phaser.Scene {
         this.updateRiveTexture();
         if (this.riveReady && this.player) {
             this._origSetTexture('riveMonkey');
+            // Reveal player once Rive texture is active (hidden initially to prevent PNG flash)
+            if (this.player.alpha === 0) this.player.setAlpha(1);
         }
     }
 
