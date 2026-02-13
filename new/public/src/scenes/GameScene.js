@@ -82,8 +82,11 @@ class GameScene extends Phaser.Scene {
         this.riveCanvas.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:256px;height:256px;pointer-events:none;';
         document.body.appendChild(this.riveCanvas);
 
+        // Slightly larger than PNG (124x120) to compensate for Rive artboard padding
+        this.riveTexW = 154;
+        this.riveTexH = 150;
         if (this.textures.exists('riveMonkey')) this.textures.remove('riveMonkey');
-        this.riveTexture = this.textures.createCanvas('riveMonkey', size, size);
+        this.riveTexture = this.textures.createCanvas('riveMonkey', this.riveTexW, this.riveTexH);
 
         this.moveMonkeyTrigger = null;
         this.riveMonkeyEnabled = true; // toggle via debug button
@@ -127,8 +130,11 @@ class GameScene extends Phaser.Scene {
         if (!this.riveCanvas.width || !this.riveCanvas.height) return;
 
         const ctx = this.riveTexture.context;
-        ctx.clearRect(0, 0, 256, 256);
-        ctx.drawImage(this.riveCanvas, 0, 0);
+        ctx.clearRect(0, 0, this.riveTexW, this.riveTexH);
+        // Draw Rive canvas shifted up so monkey feet align with texture bottom
+        // Source: full Rive canvas; Dest: shifted up by riveOffsetY to crop top padding
+          // Scale Rive canvas (256x256 or larger with DPR) down to PNG-matching texture size                                
+        ctx.drawImage(this.riveCanvas, 0, 0, this.riveTexW, this.riveTexH);   
         this.riveTexture.refresh();
     }
     fireMonkeyMove() {
@@ -428,9 +434,9 @@ class GameScene extends Phaser.Scene {
         const bodyWidth = displayW * 0.75;  // 75% от ширины
         const bodyHeight = displayH * 0.75; // 75% от высоты
 
-// Центрируем хитбокс относительно спрайта (extra offset added when Rive monkey is ON)
-        const offsetX = (displayW - bodyWidth) * 1.5 + (this.riveMonkeyEnabled ? 45 : 0);
-        const offsetY = (displayH - bodyHeight) * 2 + (this.riveMonkeyEnabled ? 80 : 0);
+// Центрируем хитбокс относительно спрайта
+        const offsetX = (displayW - bodyWidth) * 1.5 + (this.riveMonkeyEnabled ? 10 : 0);
+        const offsetY = (displayH - bodyHeight) * 2 + (this.riveMonkeyEnabled ? 25 : 0);
 
         this.player.body.setSize(bodyWidth, bodyHeight);
         this.player.body.setOffset(offsetX, offsetY);
