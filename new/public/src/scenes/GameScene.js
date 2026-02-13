@@ -1,3 +1,15 @@
+// URL is the single source of truth for rive toggle (?rive=0 to disable, default ON)
+const riveEnabled = new URLSearchParams(window.location.search).get('rive') !== '0';
+function toggleRive() {
+    const url = new URL(window.location.href);
+    if (riveEnabled) {
+        url.searchParams.set('rive', '0');
+    } else {
+        url.searchParams.delete('rive');
+    }
+    window.location.href = url.toString();
+}
+
 // Класс сцены игры (с возвратом в меню при проигрыше)
 class GameScene extends Phaser.Scene {
     constructor() {
@@ -89,7 +101,6 @@ class GameScene extends Phaser.Scene {
         this.riveTexture = this.textures.createCanvas('riveMonkey', this.riveTexW, this.riveTexH);
 
         this.moveMonkeyTrigger = null;
-        this.riveMonkeyEnabled = true; // toggle via debug button
 
         this.riveInstance = new rive.Rive({
             src: './monkey_new.riv',
@@ -138,29 +149,34 @@ class GameScene extends Phaser.Scene {
         this.riveTexture.refresh();
     }
     fireMonkeyMove() {
-        if (this.moveMonkeyTrigger && this.riveMonkeyEnabled) {
+        if (this.moveMonkeyTrigger && riveEnabled) {
             this.moveMonkeyTrigger.trigger();
         }
     }
 
-    createRiveToggleButton() {
-        // "Rive ON/OFF" toggle in top-right corner — persists in localStorage, reloads page on change
-        const label = this.riveMonkeyEnabled ? 'Rive: ON' : 'Rive: OFF';
-        this.riveToggleBtn = this.add.text(CONSTS.WIDTH - 16, 70, label, {
-            fontSize: '18px',
-            fill: this.riveMonkeyEnabled ? '#00FF00' : '#FF4444',
-            fontFamily: 'Arial',
-            stroke: '#000000',
-            strokeThickness: 3,
-            backgroundColor: '#00000088',
-            padding: { x: 8, y: 4 }
-        }).setOrigin(1, 0).setScrollFactor(0).setDepth(200).setInteractive();
+    createDebugInfoCard() {
+        // Single info card at bottom: FPS + Rive toggle
+        const riveOn = riveEnabled;
+        const riveLabel = riveOn ? 'Rive: ON' : 'Rive: OFF';
+        const riveColor = riveOn ? '#00FF00' : '#FF4444';
 
-        this.riveToggleBtn.on('pointerdown', () => {
-            const newVal = !this.riveMonkeyEnabled;
-            localStorage.setItem('riveMonkey', newVal ? '1' : '0');
-            window.location.reload();
-        });
+        // Background card
+        this.debugCard = this.add.rectangle(
+            CONSTS.WIDTH / 2, CONSTS.HEIGHT - 24, 200, 32, 0x000000, 0.55
+        ).setScrollFactor(0).setDepth(200).setOrigin(0.5, 0.5);
+        this.debugCard.setStrokeStyle(1, 0x444444);
+
+        // FPS text (left side)
+        this.fpsText = this.add.text(CONSTS.WIDTH / 2 - 90, CONSTS.HEIGHT - 24, 'FPS: --', {
+            fontSize: '14px', fill: '#AAAAAA', fontFamily: 'monospace'
+        }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(201);
+
+        // Rive toggle (right side, interactive)
+        this.riveToggleBtn = this.add.text(CONSTS.WIDTH / 2 + 90, CONSTS.HEIGHT - 24, riveLabel, {
+            fontSize: '14px', fill: riveColor, fontFamily: 'monospace'
+        }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(201).setInteractive();
+
+        this.riveToggleBtn.on('pointerdown', toggleRive);
     }
     // ==================== END RIVE EXPERIMENT ====================
 
@@ -200,10 +216,7 @@ class GameScene extends Phaser.Scene {
     create(data) {
         // ==================== RIVE EXPERIMENT ====================
         this.riveReady = false;
-        // Read toggle from localStorage (default ON)
-        const riveStored = localStorage.getItem('riveMonkey');
-        this.riveMonkeyEnabled = riveStored !== '0';
-        if (this.riveMonkeyEnabled) {
+        if (riveEnabled) {
             this.initRiveMonkey();
         }
 
@@ -328,8 +341,8 @@ class GameScene extends Phaser.Scene {
             strokeThickness: 6
         }).setScrollFactor(0).setDepth(100); // Увеличен depth чтобы был поверх всего
 
-        // RIVE: Toggle button (top-right)
-        this.createRiveToggleButton();
+        // Debug info card (bottom): FPS + Rive toggle
+        this.createDebugInfoCard();
 
         // ==================== 1V1 UI ELEMENTS ====================
         if (this.gameMode === '1v1') {
@@ -435,8 +448,8 @@ class GameScene extends Phaser.Scene {
         const bodyHeight = displayH * 0.75; // 75% от высоты
 
 // Центрируем хитбокс относительно спрайта
-        const offsetX = (displayW - bodyWidth) * 1.5 + (this.riveMonkeyEnabled ? 10 : 0);
-        const offsetY = (displayH - bodyHeight) * 2 + (this.riveMonkeyEnabled ? 25 : 0);
+        const offsetX = (displayW - bodyWidth) * 1.5 + (riveEnabled ? 10 : 0);
+        const offsetY = (displayH - bodyHeight) * 2 + (riveEnabled ? 25 : 0);
 
         this.player.body.setSize(bodyWidth, bodyHeight);
         this.player.body.setOffset(offsetX, offsetY);
@@ -496,7 +509,7 @@ class GameScene extends Phaser.Scene {
         this.player.setTexture('playerSprite');
 
         // RIVE EXPERIMENT: hijack setTexture + anims to always show Rive monkey (only when rive enabled)
-        if (this.riveMonkeyEnabled) {
+        if (riveEnabled) {
             const scene = this;
             const origSetTexture = this.player.setTexture.bind(this.player);
             this._origSetTexture = origSetTexture;
@@ -1990,8 +2003,15 @@ class GameScene extends Phaser.Scene {
     }
 
     update() {
+    // FPS counter update
+    if (this.fpsText) {
+        const fps = Math.round(this.game.loop.actualFps);
+        this.fpsText.setText('FPS: ' + fps);
+        this.fpsText.setFill(fps >= 50 ? '#00FF00' : fps >= 30 ? '#FFAA00' : '#FF4444');
+    }
+
     // RIVE EXPERIMENT: copy Rive canvas → Phaser texture + force texture every frame
-    if (this.riveMonkeyEnabled) {
+    if (riveEnabled) {
         this.updateRiveTexture();
         if (this.riveReady && this.player) {
             this._origSetTexture('riveMonkey');
