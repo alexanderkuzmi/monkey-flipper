@@ -2727,8 +2727,24 @@ class GameScene extends Phaser.Scene {
         }
     }
 
-    createRiveDebugButton() {
-        // No debug UI — offsets tuned directly in code
+    createRiveToggleButton() {
+        // "Rive ON/OFF" toggle in top-right corner — persists in localStorage, reloads page on change
+        const label = this.riveMonkeyEnabled ? 'Rive: ON' : 'Rive: OFF';
+        this.riveToggleBtn = this.add.text(CONSTS.WIDTH - 16, 70, label, {
+            fontSize: '18px',
+            fill: this.riveMonkeyEnabled ? '#00FF00' : '#FF4444',
+            fontFamily: 'Arial',
+            stroke: '#000000',
+            strokeThickness: 3,
+            backgroundColor: '#00000088',
+            padding: { x: 8, y: 4 }
+        }).setOrigin(1, 0).setScrollFactor(0).setDepth(200).setInteractive();
+
+        this.riveToggleBtn.on('pointerdown', () => {
+            const newVal = !this.riveMonkeyEnabled;
+            localStorage.setItem('riveMonkey', newVal ? '1' : '0');
+            window.location.reload();
+        });
     }
     // ==================== END RIVE EXPERIMENT ====================
 
@@ -2768,8 +2784,12 @@ class GameScene extends Phaser.Scene {
     create(data) {
         // ==================== RIVE EXPERIMENT ====================
         this.riveReady = false;
-        this.riveMonkeyEnabled = true;
-        this.initRiveMonkey();
+        // Read toggle from localStorage (default ON)
+        const riveStored = localStorage.getItem('riveMonkey');
+        this.riveMonkeyEnabled = riveStored !== '0';
+        if (this.riveMonkeyEnabled) {
+            this.initRiveMonkey();
+        }
 
         // ==================== LOAD EQUIPPED ITEMS ====================
         const userData = getTelegramUserId();
@@ -2892,6 +2912,9 @@ class GameScene extends Phaser.Scene {
             strokeThickness: 6
         }).setScrollFactor(0).setDepth(100); // Увеличен depth чтобы был поверх всего
 
+        // RIVE: Toggle button (top-right)
+        this.createRiveToggleButton();
+
         // ==================== 1V1 UI ELEMENTS ====================
         if (this.gameMode === '1v1') {
             // Таймер (центр верху экрана)
@@ -2995,9 +3018,9 @@ class GameScene extends Phaser.Scene {
         const bodyWidth = displayW * 0.75;  // 75% от ширины
         const bodyHeight = displayH * 0.75; // 75% от высоты
 
-// Центрируем хитбокс относительно спрайта (+ extra offset for Rive monkey alignment)
-        const offsetX = (displayW - bodyWidth) * 1.5 + 45;
-        const offsetY = (displayH - bodyHeight) * 2 + 80;
+// Центрируем хитбокс относительно спрайта (extra offset added when Rive monkey is ON)
+        const offsetX = (displayW - bodyWidth) * 1.5 + (this.riveMonkeyEnabled ? 45 : 0);
+        const offsetY = (displayH - bodyHeight) * 2 + (this.riveMonkeyEnabled ? 80 : 0);
 
         this.player.body.setSize(bodyWidth, bodyHeight);
         this.player.body.setOffset(offsetX, offsetY);
@@ -3056,21 +3079,24 @@ class GameScene extends Phaser.Scene {
         this.player.anims.stop();
         this.player.setTexture('playerSprite');
 
-        // RIVE EXPERIMENT: hijack setTexture + anims to always show Rive monkey
-        const scene = this;
-        const origSetTexture = this.player.setTexture.bind(this.player);
-        this.player.setTexture = function(key, frame) {
-            if (scene.riveReady) return origSetTexture('riveMonkey');
-            return origSetTexture(key, frame);
-        };
-        const origAnimPlay = this.player.anims.play.bind(this.player.anims);
-        this.player.anims.play = function(key, ignoreIfPlaying) {
-            if (scene.riveReady) {
-                scene.player.anims.stop();
-                return origSetTexture('riveMonkey');
-            }
-            return origAnimPlay(key, ignoreIfPlaying);
-        };
+        // RIVE EXPERIMENT: hijack setTexture + anims to always show Rive monkey (only when rive enabled)
+        if (this.riveMonkeyEnabled) {
+            const scene = this;
+            const origSetTexture = this.player.setTexture.bind(this.player);
+            this._origSetTexture = origSetTexture;
+            this.player.setTexture = function(key, frame) {
+                if (scene.riveReady) return origSetTexture('riveMonkey');
+                return origSetTexture(key, frame);
+            };
+            const origAnimPlay = this.player.anims.play.bind(this.player.anims);
+            this.player.anims.play = function(key, ignoreIfPlaying) {
+                if (scene.riveReady) {
+                    scene.player.anims.stop();
+                    return origSetTexture('riveMonkey');
+                }
+                return origAnimPlay(key, ignoreIfPlaying);
+            };
+        }
 
         // НОВОЕ: Создаем анимацию ходьбы
         this.anims.create({
@@ -4549,9 +4575,11 @@ class GameScene extends Phaser.Scene {
 
     update() {
     // RIVE EXPERIMENT: copy Rive canvas → Phaser texture + force texture every frame
-    this.updateRiveTexture();
-    if (this.riveReady && this.player) {
-        this.player.setTexture('riveMonkey');
+    if (this.riveMonkeyEnabled) {
+        this.updateRiveTexture();
+        if (this.riveReady && this.player) {
+            this._origSetTexture('riveMonkey');
+        }
     }
 
     // ФИКС: Не выполняем update если сцена не активна (критично для Telegram!)
